@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS entries (
     id VARCHAR PRIMARY KEY,
     data JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    owner_tenant_id UUID,
+    owner_object_id UUID
 );
 
 -- Creates an index on created_at for faster queries
@@ -18,6 +20,10 @@ CREATE INDEX IF NOT EXISTS idx_entries_created_at ON entries(created_at);
 
 -- Creates an index on the JSON data for faster searches
 CREATE INDEX IF NOT EXISTS idx_entries_data_gin ON entries USING GIN (data);
+
+-- Supports per-user retrieval; legacy records are never assigned automatically.
+CREATE INDEX IF NOT EXISTS idx_entries_owner_created
+    ON entries(owner_tenant_id, owner_object_id, created_at, id);
 
 -- Verify the table was created
 \d entries;

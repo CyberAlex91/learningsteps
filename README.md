@@ -1,5 +1,13 @@
 # LearningSteps API
 
+> **DEVSECOPS 15 Ex 2 – aktuelle Erweiterung, 17.11.2026:**
+> Entra-Anmeldung, nutzerbezogene Notizen und serverseitige Foundry-Zusammenfassung
+> sind implementiert und isoliert getestet. Vor Verwendung die additive
+> Eigentümermigration anwenden. Echter Browserlogin, gespeicherte Testnotizen
+> und Screenshot sind gesondert abzunehmen. Anleitung und Status:
+> [AI-INTEGRATION.md](AI-INTEGRATION.md). Die Origins-Angaben unten beschreiben
+> den historischen Ausgangsstand.
+
 > **Origins - Implementierungsstand, 19.10.2026**
 >
 > Dieser Fork enthält die fertige API mit Einzelabruf, Einzellöschung, Logging,

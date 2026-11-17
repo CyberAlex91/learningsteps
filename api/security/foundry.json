@@ -1,0 +1,6 @@
+{
+  "base_url": "https://learningsteps-ai-alex-709d408c.openai.azure.com/openai/v1/",
+  "deployment": "learningsteps-summary",
+  "tenant_id": "c0531484-50fa-4ff2-97df-b1f2d4810603",
+  "credential_type": "azure_cli"
+}

@@ -5,3 +5,6 @@ aiohttp
 sqlalchemy
 psycopg2-binary
 asyncpg
+PyJWT[crypto]>=2,<3
+azure-identity>=1,<2
+openai>=2,<3

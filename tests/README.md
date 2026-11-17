@@ -1,5 +1,18 @@
 # Local API integration check
 
+## Current authentication and AI extension
+
+See [AI-INTEGRATION.md](../AI-INTEGRATION.md) for the current test commands.
+`test_identity.py` and `test_summary.py` are offline unit tests.
+`test_notes_isolation.py` uses a separate, newly generated PostgreSQL database
+and two signed synthetic identities to exercise ownership through real HTTP
+and SQL paths. It never modifies existing journal records.
+
+The Origins runner documented below expects anonymous endpoints and is a
+historical baseline, not the acceptance runner for the authenticated API.
+
+## Historical Origins runner
+
 `integration_local.py` runs real HTTP requests against a separate API process on
 127.0.0.1:8001 inside the development container. It creates its own uniquely named
 PostgreSQL database, initializes the repository schema and removes only that

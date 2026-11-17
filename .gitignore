@@ -169,3 +169,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# Terraform: local cache and potentially sensitive state, plans and variables
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+# Keep .terraform.lock.hcl tracked for reproducible provider installation.

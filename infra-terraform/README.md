@@ -52,8 +52,48 @@ concurrent-lock test has not been performed.
 
 ## Next steps
 
-Save configuration, documentation and provider lock file in Git. Verify that
-local caches, saved plans and state files remain ignored.
+### Networking: deployed and verified
+
+The corrected saved plan was applied successfully according to user output:
+3 added, 0 changed, 0 destroyed (VNet and both subnets). The resource group had
+already been created by the first attempt. A subsequent full plan reported
+`No changes. Your infrastructure matches the configuration.`
+The network foundation is complete; workload isolation and managed services
+are still pending. The following paragraph records the resolved first attempt.
+
+The first validated plan contained 4 additions. During apply the resource group
+was successfully created. Azure added a `created-on` tag, which changed the
+resource-derived tag map passed to the VNet and triggered `Provider produced
+inconsistent final plan`. The output does not confirm VNet or subnet creation.
+The exact actor adding the tag (for example an Azure Policy) is not verified.
+
+Correction: both resources use the same static `local.evolution_tags` map,
+not computed tags from another resource. Only the externally added `created-on`
+tag is ignored for updates on these two resources; project/stage tags remain
+managed. The old saved plan was not reused. Formatting and validation passed,
+and the replacement plan contained 3 additions, 0 changes, 0 destructions.
+
+`network.tf` defines four additions: resource group `rg-learningsteps-evolution`,
+VNet `vnet-learningsteps-evolution` (10.60.0.0/16), AKS subnet `snet-aks`
+(10.60.0.0/22), and PostgreSQL subnet `snet-postgres` (10.60.4.0/24).
+The user confirmed no existing VNets in the subscription and Microsoft.Network
+Registered. Local/VPN/peered address space overlap has not been independently
+checked; recheck before any future network connection.
+
+The database subnet delegates to Microsoft.DBforPostgreSQL/flexibleServers and
+has a Microsoft.Storage service endpoint. Implicit outbound access is disabled
+on both subnets. AKS will need explicit outbound connectivity as part of its
+cluster configuration. No NAT gateway or public IP is created in this step.
+Subnets alone do not restrict traffic between workloads: NSG rules, Kubernetes
+network policies and database access controls remain later tasks. There is no
+AKS cluster or database server yet. Private DNS will be added with PostgreSQL.
+
+Foundry must remain unchanged in the next plan.
+
+The Terraform foundation was pushed in commit `918ced7`. Save the new network
+configuration and updated documentation in Git next. Local caches, saved plans
+and state files must remain ignored. Next infrastructure component: ACR, after
+checking resource provider registration and the chosen registry name.
 The model deployment learningsteps-summary was deleted after the exercise;
 do not recreate it until its Terraform configuration and intended use are ready.
 Add networking, ACR, AKS, PostgreSQL Flexible Server, Key Vault and identity in

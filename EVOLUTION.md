@@ -16,6 +16,16 @@ a course grade. The daily AI exercise is submitted according to the user.
 
 ## Remaining required weekly work
 
+Database step completed after credential/network commit d2c9dbf:
+4 added, 0 changed, 0 destroyed. PostgreSQL 15 B1ms server, empty learningsteps
+database, TLS enforcement and TLS minimum were created. Azure chose zone 3;
+the configuration now explicitly adopts zone 3, and the subsequent plan No changes
+is confirmed. Database connectivity from AKS is not yet tested.
+Uses the persisted Key Vault admin password through an ephemeral read and
+administrator_password_wo, with the secret rotation version as trigger.
+This creates no entries table or SQL app role yet. Explicit prevent_destroy
+guard must be reviewed after backup before the final recovery demonstration.
+
 ### PostgreSQL regional availability blocker (2026-11-18)
 
 CLI list-skus for germanywestcentral returned success but no server editions or
@@ -41,7 +51,9 @@ then secure credential provisioning and database Terraform configuration.
 - [x] Developer Entra/Azure CLI access verified; two Kubernetes 1.36.5 nodes Ready,
   Azure Linux 3.0, private IPs only. Separate WSL kubeconfig used.
 - [ ] Configure restricted CI access.
-- [ ] PostgreSQL Flexible Server, private DNS, schema/migration and backup plan.
+- [x] PostgreSQL Flexible Server and private DNS created, seven-day backup configured.
+- [ ] Verify private DB connection/TLS, initialize schema and restricted SQL app role,
+  demonstrate backup/restore and preserve existing local notes.
 - [ ] Key Vault integration into Kubernetes pods with narrow identity permissions.
 - [x] Key Vault created with firewall/RBAC and two separate password secrets;
   credential apply: 2 added, 0 changed, 0 destroyed; subsequent plan No changes.

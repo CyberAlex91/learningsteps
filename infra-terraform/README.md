@@ -52,6 +52,37 @@ concurrent-lock test has not been performed.
 
 ## Next steps
 
+### PostgreSQL server created; final plan verified
+
+User applied database.tfplan: 4 added, 0 changed, 0 destroyed. The managed server
+was created in about 6m54s, then the empty database and two TLS settings succeeded.
+Azure selected zone 3 automatically; zone="3" was added to adopt this choice.
+A subsequent full Terraform plan reported No changes. No SQL connection,
+schema initialization or restricted app SQL role has been tested yet.
+Database compute/storage charges now apply. Last confirmed code push before
+this database step: d2c9dbf; server configuration/docs still to commit.
+For an overnight pause, stop PostgreSQL and AKS through their service-specific
+CLI commands, verify both stopped states, and start both before continuing.
+Never delete data or run terraform destroy merely to pause overnight.
+
+The following paragraph records the original prepared configuration.
+
+User confirmed infrastructure/credentials committed and pushed as d2c9dbf.
+database.tf now prepares PostgreSQL 15, B1ms, Premium_LRS P4 32 GiB,
+seven-day local backup, no geo backup or HA standby, no storage autogrow.
+This is a small learning environment, not a production HA configuration.
+The server is private in West Europe and uses the previously created network.
+Public server access is disabled. Explicit configurations require secure
+transport and at least TLS 1.2. The existing vault admin password is read
+ephemerally and passed into administrator_password_wo. No secret output.
+The empty learningsteps database is created; schema/app SQL role are later steps.
+Expected plan: 4 additions, 0 changes, 0 destructions. Apply will add roughly
+EUR 17/month compute/storage list cost if kept running for 730 hours, plus
+other services/backup over allowance. Do not apply without plan review.
+prevent_destroy guards the server; preserve notes/backups and review the guard
+explicitly before the final recovery exercise. AKS stop was proposed but has
+not been executed; user chose to continue working for now.
+
 ### PostgreSQL private network complete; Key Vault prepared
 
 Key Vault step subsequently applied by the user: 2 additions, 1 subnet change,

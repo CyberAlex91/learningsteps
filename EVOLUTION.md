@@ -1,6 +1,6 @@
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-18. Approximate progress 50%; implementation estimates are not
+Status: 2026-11-18. Approximate progress 55%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
 
 ## Done and evidenced
@@ -16,12 +16,38 @@ a course grade. The daily AI exercise is submitted according to the user.
 
 ## Remaining required weekly work
 
+### PostgreSQL regional availability blocker (2026-11-18)
+
+CLI list-skus for germanywestcentral returned success but no server editions or
+versions. Saved artifact: ../artifacts/azure/postgres-skus-germanywestcentral.json.
+The response reason explicitly says provisioning is restricted in this region
+and recommends a support request for exceptions; OfferRestricted is Enabled.
+This does not establish lack of PostgreSQL support in Germany for all customers.
+Alternative capability responses for West Europe, North Europe and Sweden
+Central list editions/versions without the regional restriction. West Europe
+B1ms was chosen. User applied database-network.tfplan: 10 added, 0 changed,
+0 destroyed; subsequent full plan No changes. Data VNet 10.62.0.0/16,
+delegated subnet 10.62.1.0/24, NSG, both peerings and private DNS links to both
+VNets are created. No database server exists yet; actual database connectivity
+is not tested. The Germany AKS cluster remains unchanged.
+
+User's public retail price readback: B1ms EUR 0.0179/hour and Flexible Server
+Storage EUR 0.1229/GB-month, giving approximately EUR 17/month for 730 compute
+hours and 32 storage units. Excludes DNS, peering/transfer, backup beyond the
+included allowance and other Azure services. Next: server and Key Vault names,
+then secure credential provisioning and database Terraform configuration.
+
 - [x] AKS cluster created by Terraform; subsequent plan No changes.
 - [x] Developer Entra/Azure CLI access verified; two Kubernetes 1.36.5 nodes Ready,
   Azure Linux 3.0, private IPs only. Separate WSL kubeconfig used.
 - [ ] Configure restricted CI access.
 - [ ] PostgreSQL Flexible Server, private DNS, schema/migration and backup plan.
 - [ ] Key Vault integration into Kubernetes pods with narrow identity permissions.
+- [x] Key Vault created with firewall/RBAC and two separate password secrets;
+  credential apply: 2 added, 0 changed, 0 destroyed; subsequent plan No changes.
+  These are preparation for PostgreSQL, not existing SQL users. Password values
+  use ephemeral generation and write-only storage arguments. Actual pod access
+  and creation of the restricted database role are still pending.
 - [ ] Kubernetes Deployment, LoadBalancer Service and ConfigMap.
 - [ ] Readiness/liveness probes and resource requests/limits.
 - [ ] Horizontal Pod Autoscaler, load demonstration and replica recovery.

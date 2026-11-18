@@ -52,6 +52,61 @@ concurrent-lock test has not been performed.
 
 ## Next steps
 
+### PostgreSQL private network complete; Key Vault prepared
+
+Key Vault step subsequently applied by the user: 2 additions, 1 subnet change,
+0 destructions; full plan No changes. Vault is now provisioned. Credential
+configuration in database-credentials.tf is prepared but not applied yet:
+two ephemeral random passwords, Key Vault write-only values, version trigger 1,
+expiry 2027-02-16. No passwords in outputs, tfvars or regular secret data sources.
+Run init for the new hashicorp/random ~>3.7 provider, then fmt/validate/plan.
+Expected credential plan: 2 secret additions, 0 changes, 0 destructions.
+The new lockfile selection must be committed. Do not enable Terraform debug
+logging or display secret values. Database creation must read the persisted
+vault credential ephemerally to remain consistent after partial apply retries.
+Coordinated SQL/Key Vault credential rotation before expiry is a remaining task.
+
+Update: user applied database-credentials.tfplan successfully (2 added,
+0 changed, 0 destroyed). Both postgres-admin-password and postgres-app-password
+exist in Key Vault; following plan No changes. Random provider 3.9.1 installed
+and locked. No PostgreSQL server, SQL schema or app SQL role has been created
+by this step. Next: create the server using an ephemeral read of the persisted
+admin password into administrator_password_wo, then initialize schema and
+restricted API role and configure pod secret access. Local notes stay unchanged.
+
+Teaching preference reaffirmed by user: before each execution explain the goal,
+why the component is needed, exact execution location, command meaning,
+expected output, effects/costs and relation to the overall application. A clean
+Terraform plan means configured infrastructure matches Azure, not that the
+application is deployed or the entire project complete.
+
+Germany West Central capability response restricted PostgreSQL provisioning.
+West Europe, North Europe and Sweden Central offered server editions; West
+Europe B1ms was selected. User applied database-network.tfplan: 10 added,
+0 changed, 0 destroyed; subsequent plan No changes. data VNet 10.62.0.0/16,
+subnet 10.62.1.0/24, NSG, two peerings, DNS zone and two links are provisioned.
+The original Germany database subnet remains unused. No PostgreSQL server
+or actual private database connection has been verified yet.
+
+PostgreSQL name psql-learningsteps-alex-0ad5f630 is available. Original proposed
+Key Vault name was too long; kv-lsteps-0ad5f630 is confirmed available.
+`key-vault.tf` prepares a Standard vault in Germany with Entra RBAC, default-deny
+firewall, the developer public /32 and the AKS subnet allowed. This requires
+adding a Microsoft.KeyVault service endpoint to the existing AKS subnet.
+User gets Secrets Officer at vault scope; app read-only permission comes later.
+Plan expectation: 2 additions, 1 subnet change, 0 destructions. No secrets or
+database server are created in this vault step. Key Vault operations are billable.
+Soft delete is 7 days and purge protection enabled; provider skips permanent
+purge on destroy and can recover the soft-deleted vault during rebuild.
+Protection cannot be switched off after enabling; preserve recovery behavior
+and data before the final destroy/rebuild exercise. CI requires its own network
+allowance and secret permissions, not yet configured.
+
+Next credentials step: ephemeral Key Vault reads and write-only PostgreSQL
+password arguments, avoiding secret values in Terraform state/plan. Persist
+credentials in Key Vault before database creation, so retries reuse the same
+credential rather than generating mismatched values. Implementation pending.
+
 ### AKS created and Terraform verified (2026-11-18)
 
 User confirmed successful apply: 5 added, 0 changed, 0 destroyed. Cluster

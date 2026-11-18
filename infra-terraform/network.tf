@@ -35,6 +35,10 @@ resource "azurerm_subnet" "aks" {
   virtual_network_name            = azurerm_virtual_network.evolution.name
   address_prefixes                = ["10.60.0.0/22"]
   default_outbound_access_enabled = false
+
+  service_endpoint {
+    service = "Microsoft.KeyVault"
+  }
 }
 
 resource "azurerm_subnet" "database" {

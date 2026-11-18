@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: learningsteps-db-login-check
+  namespace: learningsteps
+  labels:
+    app.kubernetes.io/part-of: learningsteps
+    app.kubernetes.io/component: diagnostic
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 600
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: check
+      image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:de2ed68b2b5d9b6a253d08155d8ccd307d532fa489b0bab7a755b186476de2df
+      imagePullPolicy: IfNotPresent
+      command: ["python", "-c", "import time; time.sleep(590)"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi

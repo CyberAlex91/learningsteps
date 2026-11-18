@@ -261,3 +261,18 @@ The model deployment learningsteps-summary was deleted after the exercise;
 do not recreate it until its Terraform configuration and intended use are ready.
 Add networking, ACR, AKS, PostgreSQL Flexible Server, Key Vault and identity in
 subsequent reviewed steps. Never put Azure CLI caches or tokens in the image.
+# API workload identity preparation (2026-11-18)
+
+User applied application-identity.tf: four resources added, zero changed/deleted;
+subsequent full plan confirmed No changes on 2026-11-18. Resources: a dedicated
+API user-assigned identity, federation for exactly
+system:serviceaccount:learningsteps:learningsteps-api, a write-only Key Vault
+postgres-app-database-url secret and Key Vault Secrets User scoped to that single
+secret. The admin password remains outside the runtime identity's permissions.
+The URL is derived ephemerally from the persisted app password and requires
+PostgreSQL certificate and hostname verification. No credential outputs exist.
+This does not deploy pods, enable Foundry or prove runtime secret access yet.
+Next: mount the
+secret with CSI, add DATABASE_URL_FILE support and verify denied admin access.
+Credential rotation must coordinate the SQL role, password secret and derived
+URL version; this step does not implement automatic SQL password rotation.

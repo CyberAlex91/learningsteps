@@ -1,6 +1,6 @@
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-18. Approximate progress 55%; implementation estimates are not
+Status: 2026-11-18. Approximate progress 60%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
 
 ## Done and evidenced
@@ -20,10 +20,13 @@ Database step completed after credential/network commit d2c9dbf:
 4 added, 0 changed, 0 destroyed. PostgreSQL 15 B1ms server, empty learningsteps
 database, TLS enforcement and TLS minimum were created. Azure chose zone 3;
 the configuration now explicitly adopts zone 3, and the subsequent plan No changes
-is confirmed. Database connectivity from AKS is not yet tested.
+is confirmed. AKS-to-database private DNS, TCP and verified TLSv1.3 passed.
 Uses the persisted Key Vault admin password through an ephemeral read and
 administrator_password_wo, with the secret rotation version as trigger.
-This creates no entries table or SQL app role yet. Explicit prevent_destroy
+Schema and restricted learningsteps_app role were subsequently configured and
+tested: row count unchanged at 0, actual app login/SELECT over TLSv1.3, DML
+permissions verified and CREATE TABLE rejected. Both diagnostic pods removed.
+Evidence is saved outside Git under ../artifacts/azure. Explicit prevent_destroy
 guard must be reviewed after backup before the final recovery demonstration.
 
 ### PostgreSQL regional availability blocker (2026-11-18)
@@ -38,8 +41,8 @@ Central list editions/versions without the regional restriction. West Europe
 B1ms was chosen. User applied database-network.tfplan: 10 added, 0 changed,
 0 destroyed; subsequent full plan No changes. Data VNet 10.62.0.0/16,
 delegated subnet 10.62.1.0/24, NSG, both peerings and private DNS links to both
-VNets are created. No database server exists yet; actual database connectivity
-is not tested. The Germany AKS cluster remains unchanged.
+VNets are created. The server was subsequently provisioned and connectivity
+verified as described above. The Germany AKS cluster remains in place.
 
 User's public retail price readback: B1ms EUR 0.0179/hour and Flexible Server
 Storage EUR 0.1229/GB-month, giving approximately EUR 17/month for 730 compute
@@ -52,14 +55,19 @@ then secure credential provisioning and database Terraform configuration.
   Azure Linux 3.0, private IPs only. Separate WSL kubeconfig used.
 - [ ] Configure restricted CI access.
 - [x] PostgreSQL Flexible Server and private DNS created, seven-day backup configured.
-- [ ] Verify private DB connection/TLS, initialize schema and restricted SQL app role,
-  demonstrate backup/restore and preserve existing local notes.
+- [x] Verify private DB connection/TLS, initialize schema and restricted SQL app role;
+  preserve existing local notes.
+- [ ] Demonstrate cloud database backup/restore.
 - [ ] Key Vault integration into Kubernetes pods with narrow identity permissions.
+  Preparation applied: API user-assigned identity, exact service-account
+  federation, write-only database URL secret and secret-scoped read role.
+  Apply 4 added, 0 changed, 0 destroyed; subsequent plan No changes. CSI mount
+  and actual workload access/denied-admin-secret tests are still pending.
 - [x] Key Vault created with firewall/RBAC and two separate password secrets;
   credential apply: 2 added, 0 changed, 0 destroyed; subsequent plan No changes.
-  These are preparation for PostgreSQL, not existing SQL users. Password values
-  use ephemeral generation and write-only storage arguments. Actual pod access
-  and creation of the restricted database role are still pending.
+  Password values use ephemeral generation and write-only storage arguments.
+  The restricted SQL role now exists and its login was verified. Runtime pod
+  access through Workload Identity remains pending.
 - [ ] Kubernetes Deployment, LoadBalancer Service and ConfigMap.
 - [ ] Readiness/liveness probes and resource requests/limits.
 - [ ] Horizontal Pod Autoscaler, load demonstration and replica recovery.

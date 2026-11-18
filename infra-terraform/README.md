@@ -52,6 +52,27 @@ concurrent-lock test has not been performed.
 
 ## Next steps
 
+### Container Registry deployed and verified (2026-11-18)
+
+The user applied the reviewed plan: 1 added, 0 changed, 0 destroyed.
+The subsequent full plan reported No changes. Registry creation is complete
+and recurring Basic charges now apply. No image upload has been confirmed yet.
+
+User confirmed no infrastructure drift, registry name
+`acrlearningstepsalex0ad5f630` available, and Microsoft.ContainerRegistry
+Registered. `registry.tf` adds one Basic registry with admin credentials disabled.
+Public network connectivity is enabled; image access requires authentication.
+Basic does not provide the Premium private-endpoint/firewall features. The
+explicit LegacyRegistryPermissions mode supports later AcrPull/AcrPush roles;
+actual application and CI role assignments are not configured yet.
+Shared static tags avoid the previously encountered resource-derived tag issue.
+Only the externally added created-on tag is ignored for updates.
+
+The reviewed plan had 1 addition, 0 changes, 0 destructions. Registry creation incurs
+recurring Basic tier charges even when no containers run and no images exist;
+storage above the included amount and applicable transfer can add costs.
+No image build, upload, login or AKS provisioning is included in this step.
+
 ### Networking: deployed and verified
 
 The corrected saved plan was applied successfully according to user output:

@@ -22,8 +22,15 @@ non-root, read-only startup/anonymous-route rejection smoke test also passed.
   installed krb5 version. The completed full-image scan is the acceptance evidence.
 - No actual PostgreSQL transaction or Foundry inference in this Alpine image has
   been verified yet; later integration tests remain necessary.
-- Upload is pending. Retag the already scanned image for upload; a new build
-  must be scanned again because apk repositories and vulnerability data can change.
+- Upload completed according to user Docker push output on 2026-11-18:
+  `acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api:evolution-cc8174d`.
+  ACR reported digest
+  `sha256:de2ed68b2b5d9b6a253d08155d8ccd307d532fa489b0bab7a755b186476de2df`,
+  matching the scanned build's manifest list. Docker image inspect `.Id` on
+  this installation also returned this manifest digest, not the separate config
+  digest shown in the build output. The upload reused this image without rebuilding.
+  A new build must be scanned again because apk repositories and vulnerability
+  data can change. No AKS deployment has been performed yet.
 
 Earlier failed attempts below remain documented as evidence of enforcement.
 

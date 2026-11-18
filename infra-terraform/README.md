@@ -52,11 +52,67 @@ concurrent-lock test has not been performed.
 
 ## Next steps
 
+### AKS created and Terraform verified (2026-11-18)
+
+User confirmed successful apply: 5 added, 0 changed, 0 destroyed. Cluster
+creation completed in about 5m37s plus identity and role assignment setup.
+All three explicit role assignments succeeded; subsequent full plan reported
+No changes. Remote state acquisition/release was visible. User then connected
+using Azure CLI authentication and kubelogin v0.2.22, with a separate WSL file
+`~/.kube/learningsteps-evolution.yaml`. Both Kubernetes 1.36.5 nodes report Ready,
+Azure Linux 3.0 and only private node IPs. Application deployment remains pending.
+Running node, disk and networking charges now apply.
+
+For a fresh WSL terminal, restore the session settings before kubectl commands:
+
+```bash
+export PATH="$PATH:$HOME/.local/share/learningsteps-tools/bin"
+export KUBECONFIG="$HOME/.kube/learningsteps-evolution.yaml"
+```
+
+Do not copy kubeconfig or CLI authentication caches into the repository.
+
+`aks.tf` adds five Terraform resources: a control-plane managed identity,
+Network Contributor restricted to the AKS subnet, the cluster, kubelet AcrPull
+restricted to this registry, and human Azure RBAC Cluster Admin restricted to
+this cluster. Azure-managed dependent resources also incur charges even though
+they are not separate entries in the Terraform plan.
+
+Cluster candidate: Kubernetes 1.36.5, Free control-plane tier, two D4s_v6
+nodes in zones 2/3, 64-GiB managed OS disks, one surge node for updates.
+Compute-only public list price: EUR 0.4344/hour or EUR 10.43/24h for both
+nodes. Disks, load balancer, outbound public IP, transfer and other services
+are additional; an update-surge node temporarily adds compute cost.
+Latest user readback: regional quota 30, Dsv6 family 20, both usage 0.
+
+AzureLinux3 nodes use Azure CNI Overlay/Cilium. Explicit outbound connectivity
+uses a standard load balancer and managed public IP; implicit subnet outbound
+remains disabled. Pod CIDR 10.244.0.0/16, service CIDR 10.61.0.0/16.
+Entra/Azure RBAC enabled, local accounts disabled. Kubernetes API access limited
+to a developer IPv4 /32. OIDC/Workload Identity and Key Vault CSI driver are
+enabled; actual application federation/secret access will be configured later.
+For this learning cluster the single system pool also hosts the application;
+this is not full production isolation between system and application workloads.
+
+Run `python3 app/scripts/prepare_aks_local.py` from LearningSteps in WSL first.
+It reads the signed-in user's object ID and public IPv4 via api.ipify.org,
+then writes ignored local auto-tfvars (no secrets). It refuses to overwrite
+existing inputs. Confirm the source IP is suitable when VPN/proxy is involved;
+refresh the allowlist deliberately after public IP changes. CI later needs
+its own OIDC permissions and an API network access strategy; not yet implemented.
+Do not replace the human admin ID automatically with a future CI identity.
+Next: fmt, validate and saved plan, then review before any creation.
+
 ### Container Registry deployed and verified (2026-11-18)
 
 The user applied the reviewed plan: 1 added, 0 changed, 0 destroyed.
 The subsequent full plan reported No changes. Registry creation is complete
-and recurring Basic charges now apply. No image upload has been confirmed yet.
+and recurring Basic charges now apply. The user subsequently pushed
+`learningsteps-api:evolution-cc8174d` to this registry; the returned manifest
+digest matched the scanned Alpine image. See SECURITY-SCANS.md for acceptance.
+Interactive push used the existing inherited Owner role and an Entra-based
+Docker login. No additional role or registry admin credentials were needed.
+Dedicated narrow CI/AKS permissions remain to be configured.
 
 User confirmed no infrastructure drift, registry name
 `acrlearningstepsalex0ad5f630` available, and Microsoft.ContainerRegistry

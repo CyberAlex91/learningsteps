@@ -1,5 +1,55 @@
 # CI/CD preparation
 
+## Delivery implementation prepared (not yet run)
+
+User applied the five CI identity resources; subsequent Terraform plan No changes.
+Public client ID dc149d37-fe90-4f21-b23e-a56adc899e0f. Configure GitHub repository
+variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID (public IDs, not
+client secrets). No GitHub variable values have been changed by this edit.
+
+Workflow now has a separate delivery job with needs on all three successful
+checks and trusted-push repo/branch conditions matching federation. Only that
+job receives id-token:write. Scanned image TAR, SHA256 and image ID transfer via
+same-run artifact (one-day retention); download integrity failure is fatal.
+Verify archive and loaded image before Azure login; no rebuild occurs. Push with
+git-SHA tag, verify ACR digest, deploy by digest. Deployment evidence retained14days.
+Actions pinned to official commit IDs resolved via GitHub API on2026-11-19.
+
+ci_deploy.py validates GitHub context and registry digest, invokes only API image
+update/rollout/readback commands through ARM. Requires both Azure CLI success and
+remote exitCode0 plus digest confirmation. No app logs, secrets or SQL readback.
+Does not apply manifests or reset HPA replica count. Manifest is bootstrap;
+subsequent API image changes are delivery-owned, recorded in workflow evidence.
+Successful public HTTPS check follows deployment. First delivery remains unproven.
+test_ci_delivery.py tests untrusted-context/tag rejection and remote failure
+handling with mocked transport. No real Azure credentials involved.
+
+api/main.py replaces obsolete localhost login guidance with Authorize/Entra
+guidance as the visible code-change proof after first automatic deployment.
+Workflow concurrency no longer cancels an in-flight delivery when a later push
+arrives. Required follow-ups: real delivery run, negative gate demonstration,
+history scan, main-branch migration and first-start HTTPS recovery automation.
+
+## First GitHub run passed (2026-11-19)
+
+Commit b1e4f17 successfully triggered run44515789181:
+https://github.com/CyberAlex91/learningsteps/actions/runs/44515789181
+All three jobs and their lint/tests/secret/IaC/build/smoke/vulnerability steps
+completed successfully. Local updated IaC scan also passed without missing-input
+warning. This proves CI checks; image upload and deployment are not automated yet.
+
+GitHub CLI read confirmed use_immutable_subject=true and exact prefix
+repo:CyberAlex91@287638010/learningsteps@1425944756. Prepared github-actions.tf
+uses that prefix plus ref:refs/heads/feature/user-notes-summary. Five new resources
+expected: UAMI, federation, scoped AcrPush, custom Run Command role, cluster-scoped
+assignment. No client secret, state access or direct Key Vault role. Not applied.
+Run Command effectively permits cluster-admin shell execution inside this one
+cluster; it is NOT namespace isolation, even though ARM actions/scope are narrow.
+Chosen lab tradeoff avoids a new runner VM or opening API firewall to runner IPs.
+Deploy job must be a separate trusted-push job after ALL check jobs; PRs/forks get
+no CI identity match. Reassess this model before multi-tenant production use.
+Before moving delivery to main, update exact federation subject deliberately.
+
 ## Checks prepared, not run on GitHub yet
 
 .github/workflows/ci.yml runs on push, pull_request and manual dispatch.

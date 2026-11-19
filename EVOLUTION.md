@@ -1,6 +1,6 @@
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-19. Approximate progress 75%; implementation estimates are not
+Status: 2026-11-19. Approximate progress 80%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
 
 ## Authenticated public acceptance (2026-11-19)
@@ -14,8 +14,9 @@ do not delete/overwrite it during subsequent tests. This proves authenticated
 create/read through gateway, API and private DB. Cloud PATCH/DELETE and cloud AI
 are not yet evidenced. Own-note isolation tests were performed separately earlier.
 
-No GitHub Actions workflow exists yet. Next milestone: lint/tests/build,
-secret/image/IaC gates, then OIDC-authorized push/deploy. Public HTTPS success
+GitHub Actions checks now exist: commit b1e4f17, run44515789181, all three jobs
+passed including lint/tests/build and secret/image/IaC gates. Next milestone:
+OIDC-authorized push/deploy. Public HTTPS success
 does not establish continuous delivery, scaling or full recovery acceptance.
 
 ## Done and evidenced
@@ -100,10 +101,16 @@ then secure credential provisioning and database Terraform configuration.
   User ran all nine offline runtime configuration/probe tests: OK (2026-11-19).
   Production-image build, smoke test, scan, ACR push and deployment passed.
 - [ ] Horizontal Pod Autoscaler, load demonstration and replica recovery.
-- [ ] GitHub Actions on pushes: lint, tests and Docker build.
-- [ ] Secret scan, image vulnerability scan, Terraform static security analysis.
+- [x] GitHub Actions on pushes: lint, tests and Docker build.
+- [x] Checkout secret scan, image vulnerability scan, Terraform static security analysis.
+  Full history secret scan is still pending.
 - [ ] HIGH/CRITICAL findings fail pipeline; intentional negative test proves this.
-- [ ] Federated GitHub OIDC authentication and narrowly scoped Azure permissions.
+- [x] Federated GitHub OIDC identity/permissions created by Terraform;
+  subsequent plan No changes. Workflow authentication itself still unproven.
+  Delivery code prepared: separate all-gates-dependent job, exact scanned-image
+  artifact transfer, pinned Actions and digest rollout through cluster-scoped
+  Run Command. Five mocked delivery-boundary tests passed locally; workflow YAML
+  and needs dependencies validated. First real delivery run remains pending.
 - [ ] Successful scans followed by ACR push and automatic AKS deployment.
 - [ ] Demonstrate a pushed code change becoming live automatically.
 - [ ] Preserve evidence, then final Terraform destroy/apply recovery test.

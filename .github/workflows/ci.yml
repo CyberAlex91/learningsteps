@@ -1,4 +1,4 @@
-name: LearningSteps checks
+name: LearningSteps CI and delivery
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: checks-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   TRIVY_IMAGE: ghcr.io/aquasecurity/trivy@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb
@@ -39,10 +39,10 @@ jobs:
       DATABASE_URL: postgresql://ci:ci-only@127.0.0.1:5432/learningsteps_ci
       PYTHONPATH: api
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: '3.12'
           cache: pip
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Secret scan (working tree)
@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Build API image
@@ -103,3 +103,85 @@ jobs:
           docker run --rm -v "$RUNNER_TEMP/api-image.tar:/scan/image.tar:ro" \
             "$TRIVY_IMAGE" image --input /scan/image.tar --scanners vuln \
             --severity HIGH,CRITICAL --exit-code 1 --timeout 10m
+      - name: Record scanned image identity and archive checksum
+        run: |
+          docker image inspect learningsteps-api:ci --format '{{.Id}}' > "$RUNNER_TEMP/scanned-image-id.txt"
+          cd "$RUNNER_TEMP"
+          sha256sum api-image.tar > api-image.tar.sha256
+      - name: Retain exact scanned image for trusted delivery
+        if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/feature/user-notes-summary'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scanned-api-image
+          path: |
+            ${{ runner.temp }}/api-image.tar
+            ${{ runner.temp }}/api-image.tar.sha256
+            ${{ runner.temp }}/scanned-image-id.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  delivery:
+    name: OIDC image push and AKS rollout
+    needs: [quality, source-security, image-security]
+    if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/feature/user-notes-summary'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Download scanned image from this workflow run
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: scanned-api-image
+          path: ${{ runner.temp }}/delivery
+          digest-mismatch: error
+      - name: Verify archive and image before Azure login
+        working-directory: ${{ runner.temp }}/delivery
+        run: |
+          sha256sum --check api-image.tar.sha256
+          docker image load --input api-image.tar
+          actual=$(docker image inspect learningsteps-api:ci --format '{{.Id}}')
+          expected=$(cat scanned-image-id.txt)
+          test "$actual" = "$expected"
+      - name: Azure login using short-lived GitHub OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Push unchanged image and verify registry digest
+        id: push
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          registry=acrlearningstepsalex0ad5f630
+          repo="$registry.azurecr.io/learningsteps-api"
+          image="$repo:git-$REVISION"
+          az acr login --name "$registry" --expose-token --query accessToken -o tsv |
+            docker login "$registry.azurecr.io" --username 00000000-0000-0000-0000-000000000000 --password-stdin
+          docker tag learningsteps-api:ci "$image"
+          docker push "$image"
+          local_ref=$(docker image inspect "$image" --format '{{index .RepoDigests 0}}')
+          test "${local_ref%@*}" = "$repo"
+          remote_digest=$(az acr repository show --name "$registry" --image "learningsteps-api:git-$REVISION" --query digest -o tsv)
+          test "${local_ref##*@}" = "$remote_digest"
+          echo "image=$repo@$remote_digest" >> "$GITHUB_OUTPUT"
+      - name: Deploy verified digest through Azure AKS Run Command
+        env:
+          IMAGE_REF: ${{ steps.push.outputs.image }}
+        run: python3 scripts/ci_deploy.py
+      - name: Verify public HTTPS after rollout
+        run: python3 scripts/check_https_access.py --timeout 60
+      - name: Preserve rollout evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: deployment-evidence
+          path: ${{ runner.temp }}/deployment-evidence.json
+          if-no-files-found: error
+          retention-days: 14

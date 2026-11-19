@@ -1,5 +1,22 @@
 # LearningSteps Evolution – Terraform
 
+## GitHub delivery identity prepared (not applied)
+
+Update: user confirmed apply completed and full plan No changes. Public CI
+client ID dc149d37-fe90-4f21-b23e-a56adc899e0f. Workflow delivery implementation
+is prepared but has not yet demonstrated an authenticated push/deploy.
+
+github-actions.tf prepares five resources after the first green CI run.
+Own UAMI with exact immutable GitHub repository+feature-branch federation,
+AcrPush only at ACR, custom read/runcommand/commandResults role assigned only
+at LearningSteps AKS. This ARM deployment path preserves API IP restrictions.
+Run Command is powerful inside that cluster (effectively cluster-admin), not
+namespace RBAC. No state/Key Vault access, subscription Contributor or persistent
+client secret is granted. Deploy workflow must wait for all security/quality
+gates and accept trusted pushes only. Before merging delivery into main, review
+the federation branch subject. fmt/validate/review plan first; expected five
+additions with no existing-resource change/deletion. Client ID output is public.
+
 ## Public HTTPS address created (2026-11-19)
 
 User applied the reviewed plan; IP exists and subsequent plan No changes.

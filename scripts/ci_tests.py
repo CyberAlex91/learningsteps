@@ -32,7 +32,7 @@ def main():
             or target.username != "ci" or target.path != "/learningsteps_ci"
             or os.environ.get("DATABASE_URL_FILE")):
         raise SystemExit("STOP: this helper only accepts the disposable GitHub CI database")
-    for pattern in ("test_identity.py", "test_summary.py", "test_runtime.py"):
+    for pattern in ("test_identity.py", "test_summary.py", "test_runtime.py", "test_ci_delivery.py"):
         subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests",
                         "-p", pattern, "-v"], cwd=ROOT, check=True)
     asyncio.run(initialize_disposable_database(dsn))

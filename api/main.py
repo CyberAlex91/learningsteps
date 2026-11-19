@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="LearningSteps API",
-    description="Dein Lerntagebuch mit sicherer, nutzerbezogener KI-Zusammenfassung. Fuer die Anmeldung http://localhost:8000/docs verwenden.",
+    description="Dein Lerntagebuch mit sicherer, nutzerbezogener KI-Zusammenfassung. Melde dich ueber Authorize mit deinem Microsoft-Entra-Konto an.",
     lifespan=lifespan,
     swagger_ui_init_oauth={
         "clientId": auth_settings.swagger_client_id,

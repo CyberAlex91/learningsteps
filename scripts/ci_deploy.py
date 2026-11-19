@@ -17,7 +17,7 @@ def main():
     if (os.environ.get("GITHUB_ACTIONS") != "true"
             or os.environ.get("GITHUB_EVENT_NAME") != "push"
             or os.environ.get("GITHUB_REPOSITORY") != "CyberAlex91/learningsteps"
-            or os.environ.get("GITHUB_REF") != "refs/heads/feature/user-notes-summary"):
+            or os.environ.get("GITHUB_REF") != "refs/heads/main"):
         raise SystemExit("STOP: delivery requires the trusted GitHub push context")
     image = os.environ.get("IMAGE_REF", "")
     revision = os.environ.get("GITHUB_SHA", "")

@@ -9,6 +9,11 @@ Zeitstempeln. Sie ist kein allgemeines PostgreSQL-Clusterbackup: Schema und Roll
 kommen aus `database_setup.sql` und `configure_cloud_database.py`. Zusätzliche
 öffentliche Tabellen lassen den Export vorsorglich abbrechen.
 
+Die bestehenden Entra-Registrierungen für API und Swagger sowie das separate
+Remote-State-Backend sind dauerhafte Voraussetzungen. Sie werden in diesem
+Anwendungs-Destroy nicht gelöscht. Der Test rekonstruiert die 45 verwalteten
+Azure-Anwendungsressourcen und Kubernetes-Objekte, keinen leeren Entra-Tenant.
+
 Alle folgenden Befehle: **WSL-Terminal in VS Code**, Projektordner LearningSteps.
 Benötigt: angemeldete Azure CLI, GitHub CLI, Terraform, kubectl/kubelogin,
 Docker Desktop sowie Python mit `cryptography` und `PyYAML`. Die Python-Module
@@ -96,6 +101,15 @@ KI-Anfrage ausführen sowie die eigene restaurierte Notiz im Browser prüfen.
 Erst die protokollierte tatsächliche Ausführung beweist den Neuaufbau; Skripte
 allein sind noch kein Wiederherstellungsnachweis.
 
+`check_recovery_final.py` bündelt diese nachgelagerten Prüfungen und erzeugt den
+Abschlussnachweis erst bei vollständig bestandenem Wiederaufbau. Ein unterbrochener
+Bootstrap merkt sich den erfolgreichen Datenrestore und prüft bei Wiederholung
+dessen Hash, statt vorhandene Daten zu löschen. Bei einem fehlgeschlagenen
+Infrastruktur-Apply den partiellen State behalten und einen neuen normalen Plan
+für die fehlenden Ressourcen erzeugen; `infrastructure` nicht auf gefülltem State
+wiederholen. Im tatsächlichen Lauf war B1ms in der früheren festen Zone 3 nicht
+mehr verfügbar. Ohne feste Zonenbindung wählte Azure Zone 2.
+
 ## Kosten und normale Pausen
 
 Für eine normale Pause nicht die gesamte Infrastruktur löschen. AKS und PostgreSQL
@@ -105,3 +119,16 @@ weiterhin Restkosten. Den Modellzugriff bei Bedarf über einen neuen geprüften 
 mit `enable_ai_summary=false` entfernen; ein gewöhnlicher späterer Plan aktiviert
 wegen des Defaultwerts das Modell wieder. Nach einer Änderung der öffentlichen IP
 zuerst `refresh_developer_access.py` verwenden, keine Zugangsbereiche auf /0 öffnen.
+
+## Unterbrochener Apply und Geheimnisimport
+
+Im tatsächlichen Lauf mussten zwei bereits angelegte Ressourcen nach einer
+Unterbrechung importiert werden. Vor Aufheben der alten State-Sperre wurde
+verifiziert, dass kein Terraform-Prozess mehr lief. Ein Secret-Import kann den
+Wert in den privaten State lesen, auch wenn die Zielkonfiguration Write-only
+verwendet. Die App-Kennwortversion wurde deshalb VOR dem SQL-Rollenaufbau auf 2
+erhöht; der importierte alte Wert wird nicht als SQL-Kennwort verwendet. Der
+Folge-Apply entfernt das reguläre value-Feld aus dem aktuellen State. Historische
+State-Versionen bleiben vertrauliche Betriebsdaten und gehören nicht in die Abgabe.
+Dies ist kein allgemeines automatisches Rotationsverfahren für bereits laufende
+Datenbanken. Weitere Rotationen müssen SQL-Rolle und URL koordiniert aktualisieren.

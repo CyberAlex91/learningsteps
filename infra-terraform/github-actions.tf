@@ -17,7 +17,7 @@ resource "azurerm_federated_identity_credential" "github_actions" {
   user_assigned_identity_id = azurerm_user_assigned_identity.github_actions.id
   issuer                    = "https://token.actions.githubusercontent.com"
   audience                  = ["api://AzureADTokenExchange"]
-  subject                   = "repo:CyberAlex91@287638010/learningsteps@1425944756:ref:refs/heads/feature/user-notes-summary"
+  subject                   = "repo:CyberAlex91@287638010/learningsteps@1425944756:ref:refs/heads/main"
 }
 
 resource "azurerm_role_assignment" "github_acr_push" {

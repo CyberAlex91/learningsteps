@@ -19,7 +19,7 @@ class DeliveryTests(unittest.TestCase):
         return {
             "GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "push",
             "GITHUB_REPOSITORY": "CyberAlex91/learningsteps",
-            "GITHUB_REF": "refs/heads/feature/user-notes-summary",
+            "GITHUB_REF": "refs/heads/main",
             "GITHUB_SHA": "a" * 40, "IMAGE_REF": ci_deploy.PREFIX + "b" * 64,
             "RUNNER_TEMP": directory,
         }
@@ -28,6 +28,7 @@ class DeliveryTests(unittest.TestCase):
         for key, invalid in (("GITHUB_EVENT_NAME", "pull_request"),
                              ("GITHUB_REPOSITORY", "other/learningsteps"),
                              ("GITHUB_REF", "refs/heads/untrusted"),
+                             ("GITHUB_REF", "refs/heads/feature/user-notes-summary"),
                              ("GITHUB_ACTIONS", "false")):
             context = self.context("/unused")
             context[key] = invalid

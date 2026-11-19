@@ -54,10 +54,10 @@ FastAPI im lokalen Entwicklungscontainer mit der vorhandenen Python-Umgebung.
 `.env` bleibt privat; `.env-sample` enthält nur lokale Beispielwerte.
 
 GitHub Actions prüft Python, Nutzertrennung mit einer isolierten Testdatenbank,
-Quellen/Images/Terraform und künftig zusätzlich die vollständige gefetchte
-Git-Historie. Nur der festgelegte vertrauenswürdige Feature-Branch darf nach
-bestandenen Prüfungen über OIDC unveränderte geprüfte Images nach ACR und AKS liefern.
-Vor Wechsel auf `main` müssen Workflow und Entra-Föderation bewusst angepasst werden.
+Quellen/Images/Terraform und die vollständige gefetchte Git-Historie. Nur ein
+Push auf `main` im festgelegten Repository darf nach bestandenen Prüfungen über
+OIDC unveränderte geprüfte Images nach ACR und AKS liefern. Die exakte Föderation
+und der Workflow verwenden denselben Branch.
 
 Terraform-Änderungen: formatieren, validieren, Plan erstellen und prüfen, dann
 den geprüften Plan anwenden. Alte gespeicherte Pläne wurden entfernt; vor einer

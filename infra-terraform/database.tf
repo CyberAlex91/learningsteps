@@ -14,8 +14,7 @@ resource "azurerm_postgresql_flexible_server" "evolution" {
   name                = "psql-learningsteps-alex-0ad5f630"
   resource_group_name = azurerm_resource_group.data.name
   location            = azurerm_resource_group.data.location
-  # Azure selected zone 3 during initial provisioning; adopt it explicitly.
-  zone                              = "3"
+  # No fixed zone: let Azure select available capacity for the single lab server.
   version                           = "15"
   sku_name                          = "B_Standard_B1ms"
   storage_mb                        = 32768
@@ -38,7 +37,7 @@ resource "azurerm_postgresql_flexible_server" "evolution" {
   }
 
   lifecycle {
-    ignore_changes  = [tags["created-on"]]
+    ignore_changes  = [tags["created-on"], zone]
     prevent_destroy = true
   }
 

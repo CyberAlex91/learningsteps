@@ -152,7 +152,10 @@ def bootstrap(release):
     os.environ["LEARNINGSTEPS_DIAGNOSTIC_IMAGE"] = images["api"]
     print("Configuring private database schema/role and restoring saved data...", flush=True)
     run(["python3", str(APP / "scripts/configure_cloud_database.py")])
-    run(["python3", str(APP / "scripts/cloud_data_backup.py"), "restore-empty", "--manifest", str(ROOT / release["data_backup"])])
+    # A resumed bootstrap must verify restored data, never delete it to retry.
+    data_mode = "verify-current" if release.get("database_restored") else "restore-empty"
+    run(["python3", str(APP / "scripts/cloud_data_backup.py"), data_mode, "--manifest", str(ROOT / release["data_backup"])])
+    release["database_restored"] = True; save(release)
     client_id = run(["az", "identity", "show", "-g", "rg-learningsteps-evolution", "-n", "id-learningsteps-api", "--query", "clientId", "-o", "tsv"])
     rendered = (APP / "k8s-manifests/workload-access.json").read_text().replace("__API_CLIENT_ID__", client_id)
     k("apply", "-f", "-", input=rendered)
@@ -278,9 +281,11 @@ def restore_guards():
     original = json.loads(path.read_text())
     for rel, text in original.items():
         current = APP / "infra-terraform" / rel
-        if current.read_text() != text.replace("prevent_destroy = true", "prevent_destroy = false"):
-            raise RuntimeError("Guarded source changed; restore manually")
-        current.write_text(text)
+        content = current.read_text()
+        if content.count("prevent_destroy = false") != text.count("prevent_destroy = true"):
+            raise RuntimeError("Unexpected lifecycle guards; restore manually")
+        # Preserve reviewed capacity corrections made during actual rebuild.
+        current.write_text(content.replace("prevent_destroy = false", "prevent_destroy = true"))
     path.unlink()
     print("PASS: original lifecycle guards restored")
 

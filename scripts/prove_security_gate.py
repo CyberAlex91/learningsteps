@@ -47,8 +47,8 @@ def main():
     if os.name != "posix":
         raise SystemExit("Run this helper in WSL")
     branch = git("branch", "--show-current")
-    if branch != "feature/user-notes-summary":
-        raise SystemExit("STOP: expected the LearningSteps feature branch")
+    if branch != "main":
+        raise SystemExit("STOP: expected the LearningSteps main branch")
     if git("remote", "get-url", "origin") != "https://github.com/CyberAlex91/learningsteps.git":
         raise SystemExit("STOP: unexpected origin repository")
     if git("status", "--porcelain", "--untracked-files=no"):

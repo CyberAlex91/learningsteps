@@ -9,7 +9,10 @@ from uuid import uuid4
 
 from fastapi import HTTPException
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "api"))
+# A Kubernetes stdin execution already has /app on its import path.
+source_file = globals().get("__file__", "")
+if source_file and not source_file.startswith("<"):
+    sys.path.insert(0, str(Path(source_file).resolve().parents[1] / "api"))
 from services.summary_service import FoundrySummarizer  # noqa: E402
 
 

@@ -116,3 +116,13 @@ Diese Übersicht ist selbst die Erklärung der Dateizwecke. Nicht im Quellenkata
 | [RECOVERY.md](RECOVERY.md) | Beschreibt Sicherung, Abbau, Wiederherstellung und Aussagegrenzen. |
 | [scripts/cloud_data_backup.py](scripts/cloud_data_backup.py) | Verschlüsselt alle Anwendungsdaten und prüft isolierten beziehungsweise leeren Restore. |
 | [scripts/recovery.py](scripts/recovery.py) | Sichert Images/Zertifikate und orchestriert den kontrollierten Wiederaufbau. |
+
+## Abschluss und Abgabe
+
+| Datei | Aufgabe |
+| --- | --- |
+| scripts/check_recovery_final.py | Bündelt tatsächliche Neuaufbau-, Datenhash-, HTTPS- und KI-Abnahme. |
+| scripts/build_reports.py | Erzeugt Bericht und separate Ablauferklärung als Red-Blue-PDF und Markdown. |
+| scripts/package_submission.py | Packt versionierte Quellen und ausgewählte sichere Nachweise mit Prüfsummen. |
+| docs/LearningSteps-Evolution-Projektbericht.md | Editierbare Quelle des finalen technischen Berichts. |
+| docs/LearningSteps-Evolution-Ablauf.md | Editierbare Quelle der separaten verständlichen Anleitung. |

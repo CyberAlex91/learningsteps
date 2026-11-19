@@ -42,7 +42,7 @@ spec:
               app: learningsteps-api
       containers:
         - name: api
-          image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:bca3adb76034cf55982987c43988247a93f58e03303b208d4c9b636f9ce10d7f
+          image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:58023fe9aaa027e22ec008a7b137cc3a93d1727965e801a44cb642f5b5628171
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

@@ -13,7 +13,7 @@ import sys
 POD = "learningsteps-db-login-check"
 NAMESPACE = "learningsteps"
 HOST = "psql-learningsteps-alex-0ad5f630.postgres.database.azure.com"
-IMAGE = os.environ.get("LEARNINGSTEPS_DIAGNOSTIC_IMAGE", "acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:de2ed68b2b5d9b6a253d08155d8ccd307d532fa489b0bab7a755b186476de2df")
+IMAGE = os.environ.get("LEARNINGSTEPS_DIAGNOSTIC_IMAGE", "acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:58023fe9aaa027e22ec008a7b137cc3a93d1727965e801a44cb642f5b5628171")
 
 # Only this code (without the password) appears in kubectl's process arguments.
 # JSON credentials are transmitted through the exec stream's standard input.

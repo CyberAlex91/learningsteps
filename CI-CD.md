@@ -1,5 +1,42 @@
 # CI/CD preparation
 
+## Delivery succeeded after namespace repair (2026-11-19)
+
+User applied two namespace role resources; Terraform No changes. An explicit
+SubjectAccessReview with the CI Entra oid returned allowed:true for deployments
+patch in learningsteps, citing the new role assignment. Plain --as without oid
+was not a valid AAD permission simulation and was not used as acceptance evidence.
+
+Reran only failed delivery in run44519207174 (attempt2); final status success.
+Previously successful test/scan/build artifacts reused. OIDC, checksum/image ID,
+ACR digest, Run Command rollout, public HTTPS and evidence upload passed.
+Downloaded artifact: ../artifacts/github/run-44519207174/deployment-evidence.json.
+Revision d7992a49daffe0e33fea6c6a9ea5f37a7c70a103; deployed API digest
+sha256:539cd1a7e4e7183c52458c6d08a79f5aa3d13fbf79253ed0cde23b19fa416879.
+Independent public HTTPS OpenAPI read confirmed the new Authorize/Entra text
+and absence of the obsolete localhost guidance: code change is live.
+Namespace repair source/docs still need committing; the next ordinary push must
+confirm the complete path succeeds without a manually retried delivery job.
+
+## First delivery attempt: namespace authorization missing
+
+Run44519207174 for commit d7992a4 passed all three gates, artifact integrity,
+GitHub OIDC login, ACR push and registry digest verification. Delivery failed at
+the first Kubernetes deployment get: Forbidden for CI principal
+5561615c-6671-463d-82b6-c28aef289651. Direct WSL read verified API deployment is
+still revision1 with original healthy image/pods; no partial API update occurred.
+
+Correction to earlier planning: in this Entra/Azure-RBAC cluster Run Command
+retains caller authorization; ARM invoke rights alone do not bypass Kubernetes
+authorization. Preparing two added Terraform resources: custom deployments/read
+and deployments/write data-action role, assigned only at cluster/namespaces/
+learningsteps. No direct Secret read, pod exec, RBAC binding or delete actions.
+Deployment write permits changing workload templates within that namespace,
+so CI remains trusted-repo/branch-only; do not describe it as field-level image
+authorization. Existing ARM invoke and ACR permissions stay unchanged.
+After reviewed apply/propagation, rerun the failed delivery job using its same
+scanned artifact; no image rebuild is required just for a permission repair.
+
 ## Delivery implementation prepared (not yet run)
 
 User applied the five CI identity resources; subsequent Terraform plan No changes.
@@ -43,8 +80,8 @@ repo:CyberAlex91@287638010/learningsteps@1425944756. Prepared github-actions.tf
 uses that prefix plus ref:refs/heads/feature/user-notes-summary. Five new resources
 expected: UAMI, federation, scoped AcrPush, custom Run Command role, cluster-scoped
 assignment. No client secret, state access or direct Key Vault role. Not applied.
-Run Command effectively permits cluster-admin shell execution inside this one
-cluster; it is NOT namespace isolation, even though ARM actions/scope are narrow.
+Correction: first actual delivery showed Run Command enforces caller Kubernetes
+authorization in this cluster; see namespace authorization repair above.
 Chosen lab tradeoff avoids a new runner VM or opening API firewall to runner IPs.
 Deploy job must be a separate trusted-push job after ALL check jobs; PRs/forks get
 no CI identity match. Reassess this model before multi-tenant production use.

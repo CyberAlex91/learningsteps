@@ -10,12 +10,25 @@ github-actions.tf prepares five resources after the first green CI run.
 Own UAMI with exact immutable GitHub repository+feature-branch federation,
 AcrPush only at ACR, custom read/runcommand/commandResults role assigned only
 at LearningSteps AKS. This ARM deployment path preserves API IP restrictions.
-Run Command is powerful inside that cluster (effectively cluster-admin), not
-namespace RBAC. No state/Key Vault access, subscription Contributor or persistent
+Run Command is also subject to caller Kubernetes authorization in this cluster.
+The first attempt was rejected until namespace deployment rights are added.
+No state/direct Key Vault access, subscription Contributor or persistent
 client secret is granted. Deploy workflow must wait for all security/quality
 gates and accept trusted pushes only. Before merging delivery into main, review
 the federation branch subject. fmt/validate/review plan first; expected five
 additions with no existing-resource change/deletion. Client ID output is public.
+
+First delivery passed OIDC/ACR but Kubernetes denied deployment get for the CI
+identity; API stayed at its old healthy image. github-actions.tf now prepares a
+second custom role with deployments/read and deployments/write DataActions,
+assigned only to learningsteps namespace. Expected repair plan: two additions,
+zero changes/deletions. Await review/apply and role propagation before rerun.
+
+Update: namespace role/assignment applied (2 added), Terraform No changes.
+Entra-oid SubjectAccessReview allowed patch. Failed delivery job rerun succeeded;
+public API description now shows the new commit's code. Run44519207174 attempt2,
+artifact downloaded outside Git. ARM invoke alone was insufficient; namespace
+DataActions are required and now evidenced. Commit this source repair next.
 
 ## Public HTTPS address created (2026-11-19)
 

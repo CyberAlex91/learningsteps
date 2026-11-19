@@ -1,6 +1,6 @@
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-19. Approximate progress 80%; implementation estimates are not
+Status: 2026-11-19. Approximate progress 85%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
 
 ## Authenticated public acceptance (2026-11-19)
@@ -111,8 +111,13 @@ then secure credential provisioning and database Terraform configuration.
   artifact transfer, pinned Actions and digest rollout through cluster-scoped
   Run Command. Five mocked delivery-boundary tests passed locally; workflow YAML
   and needs dependencies validated. First real delivery run remains pending.
-- [ ] Successful scans followed by ACR push and automatic AKS deployment.
-- [ ] Demonstrate a pushed code change becoming live automatically.
+- [x] Successful scans followed by OIDC ACR push and AKS deployment.
+- [x] Pushed code change reached the public API through delivery workflow:
+  run44519207174 attempt2 succeeded after namespace authorization repair.
+  Deployed digest539cd1a7e4e7183c52458c6d08a79f5aa3d13fbf79253ed0cde23b19fa416879;
+  independent HTTPS OpenAPI read confirmed new Authorize/Entra description.
+  Evidence ../artifacts/github/run-44519207174/deployment-evidence.json.
+  Next ordinary push should verify first-attempt full workflow after the repair.
 - [ ] Preserve evidence, then final Terraform destroy/apply recovery test.
 - [ ] Technical report, screenshots, runnable instructions and course submission.
 

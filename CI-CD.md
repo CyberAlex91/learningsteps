@@ -1,6 +1,15 @@
 <!-- Zweck: Beschreibt die GitHub-Prüfungen, OIDC-Auslieferung und deren tatsächliche Nachweise. -->
 # CI/CD status and implementation history
 
+## History scan and ordinary delivery passed (2026-11-19)
+
+Run44534120752 for commitbecdbf4 completed successfully: full fetched Git history
+scan, working-tree secret scan, Terraform analysis, tests, image gate and OIDC
+delivery. The preceding run44533492995 stopped safely on a repeated public
+Docker-tag false positive in the newly committed review text. That exact third
+historical fingerprint was inspected; no rule-wide exemption was introduced.
+The corrected commit was scanned locally before push (40 available commits).
+
 ## Current verified status (2026-11-19)
 
 Normal push 126d216 completed the full workflow successfully, including all

@@ -18,3 +18,9 @@ variable "aks_api_allowed_cidr" {
     error_message = "Provide one IPv4 address as a /32 CIDR."
   }
 }
+# AI can be removed deliberately without deleting the Foundry account or notes.
+variable "enable_ai_summary" {
+  type        = bool
+  default     = true
+  description = "Deploy the pay-per-use summary model and API inference role."
+}

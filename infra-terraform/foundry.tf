@@ -42,6 +42,34 @@ resource "azurerm_cognitive_account" "foundry" {
   }
 }
 
-# No model deployment: the AI function deliberately remains unavailable.
-# Existing developer RBAC is not yet managed here. AKS Workload Identity and
-# narrowly scoped application permissions will be added in a later step.
+# Standard inference deployment, not reserved/provisioned throughput.
+resource "azurerm_cognitive_deployment" "summary" {
+  count                = var.enable_ai_summary ? 1 : 0
+  name                 = "learningsteps-summary"
+  cognitive_account_id = azurerm_cognitive_account.foundry.id
+
+  model {
+    format  = "OpenAI"
+    name    = "gpt-5-mini"
+    version = "2025-08-07"
+  }
+
+  sku {
+    name     = "GlobalStandard"
+    capacity = 1
+  }
+
+  version_upgrade_option = "NoAutoUpgrade"
+}
+
+# Inference only at this account; no management/key or subscription grant.
+resource "azurerm_role_assignment" "api_foundry" {
+  count                            = var.enable_ai_summary ? 1 : 0
+  scope                            = azurerm_cognitive_account.foundry.id
+  role_definition_name             = "Cognitive Services OpenAI User"
+  principal_id                     = azurerm_user_assigned_identity.api.principal_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
+}
+
+# Existing developer RBAC remains separate from the API runtime role.

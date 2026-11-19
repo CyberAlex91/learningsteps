@@ -23,8 +23,11 @@ async def run():
         dict(id=str(uuid4()), work=w, struggle=s, intention=i)
         for w, s, i in topics
     ]
-    text = await FoundrySummarizer().summarize(notes)
-    return {"success": True, "runtime": "development-container", "credential": "AzureCliCredential",
+    summarizer = FoundrySummarizer()
+    text = await summarizer.summarize(notes)
+    mode = summarizer.credential_type
+    return {"success": True, "runtime": "aks" if mode == "workload_identity" else "development-container",
+            "credential": mode,
             "syntheticNoteCount": len(notes), "storedNotesUsed": False, "summary": text}
 
 

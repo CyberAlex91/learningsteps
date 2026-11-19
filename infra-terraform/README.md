@@ -1,6 +1,24 @@
 <!-- Zweck: Beschreibt Terraform-Betrieb, Architekturentscheidungen und Infrastruktur-Nachweise. -->
 # LearningSteps Evolution – Terraform
 
+## Foundry runtime applied (2026-11-19)
+
+foundry-runtime.tfplan contains exactly two additions: summary deployment and
+account-scoped Cognitive Services OpenAI User for id-learningsteps-api.
+Model: gpt-5-mini 2025-08-07, GlobalStandard capacity1, NoAutoUpgrade. No reserved
+throughput. Model calls incur usage charges; the recorded model version must be
+reviewed before retirement. Existing developer permissions remain separate.
+
+enable_ai_summary defaults to true so a normal rebuild includes the AI function.
+To remove model availability and the runtime inference grant for a deliberate
+cost pause, review a new plan with -var=enable_ai_summary=false and apply it;
+keep the Foundry account and note data. A later ordinary default plan enables
+the model again. Never use the flag without reviewing the resulting full plan.
+
+The reviewed plan was applied: 2 added, 0 changed, 0 destroyed. Backend Workload Identity
+mode and the bootstrap deployment setting are prepared; actual cloud inference
+acceptance follows their separate delivery and rollout.
+
 ## GitHub delivery identity prepared (not applied)
 
 Update: user confirmed apply completed and full plan No changes. Public CI

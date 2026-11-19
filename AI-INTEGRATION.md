@@ -1,6 +1,28 @@
 <!-- Zweck: Erklärt Entra-Anmeldung, Nutzertrennung und die nachgewiesene lokale KI-Integration. -->
 # DEVSECOPS 15 Ex 2 – sichere KI-Zusammenfassung
 
+## Cloud identity rollout (2026-11-19; backend delivery pending)
+
+The backend now accepts the explicit server-side environment setting
+FOUNDRY_CREDENTIAL_TYPE=workload_identity. It requires the expected tenant plus
+AZURE_CLIENT_ID and AZURE_FEDERATED_TOKEN_FILE injected by the AKS webhook.
+It uses WorkloadIdentityCredential without falling back to CLI or other identities.
+The local default in foundry.json stays azure_cli. No key/client secret is added.
+Eleven summary boundary/credential-mode tests passed offline.
+
+User applied foundry-runtime.tfplan: 2 added, 0 changed, 0 destroyed.
+It adds the gpt-5-mini 2025-08-07 GlobalStandard capacity1 deployment and the API's
+account-scoped Cognitive Services OpenAI User role. enable_ai_summary defaults to
+true for rebuild; deliberately setting false removes the model and its runtime
+role, not the Foundry account or journal data. Standard requests can incur usage
+charges. No provisioned/reserved throughput deployment is requested.
+
+Bootstrap deployment.yaml now declares the environment setting. Existing CI
+delivery changes only the image; after applying the infrastructure and delivering
+the new backend code, set this one environment value on the live deployment and
+wait for rollout. Do not reapply the old bootstrap image just to change an env var.
+Actual Workload Identity inference and authenticated cloud summary remain pending.
+
 ## Implementierung und aktueller Status
 
 Die API besitzt Entra-Anmeldung, nutzerbezogene Datenbankabfragen und den

@@ -48,6 +48,8 @@ spec:
             - name: http
               containerPort: 8000
           env:
+            - name: FOUNDRY_CREDENTIAL_TYPE
+              value: workload_identity
             - name: DATABASE_URL_FILE
               valueFrom:
                 configMapKeyRef:

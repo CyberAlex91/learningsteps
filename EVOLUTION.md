@@ -113,9 +113,9 @@ then secure credential provisioning and database Terraform configuration.
   remained Ready at completion. Continuous availability was not measured.
 - [x] GitHub Actions on pushes: lint, tests and Docker build.
 - [x] Checkout secret scan, image vulnerability scan, Terraform static security analysis.
-- [x] Local Git history secret scan: 38 available commits; two exact historical
-  Docker-tag false positives reviewed, no remaining detections. Full-checkout
-  CI history scan is implemented and locally checked; remote run still pending.
+- [x] Local Git history secret scan and full-checkout CI history scan passed.
+  Three exact historical Docker-tag false positives reviewed. Corrected commit
+  becdbf4 scanned locally (40 available commits); full run44534120752 succeeded.
 - [x] HIGH/CRITICAL findings fail the scanner: intentional isolated negative test
   produced AZU-0047 and AZU-0050 (CRITICAL), exit 1. Delivery was skipped;
   proof branch also excluded independently by trusted-branch condition.
@@ -139,7 +139,9 @@ then secure credential provisioning and database Terraform configuration.
 
 - [x] Actual stored own notes summarized, with authenticated user separation.
 - [ ] Replace local Azure CLI credential with AKS Workload Identity.
-- [ ] Model deployment and application RBAC expressed in Terraform.
+- [x] Model deployment and application RBAC expressed in Terraform; user applied
+  foundry-runtime.tfplan: 2 added, 0 changed, 0 destroyed. Model gpt-5-mini,
+  version2025-08-07, GlobalStandard capacity1; API inference role scoped to account.
 - [ ] Verify stored-note summary on Azure-hosted application without key exposure.
 
 ## Optional scope

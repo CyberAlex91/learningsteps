@@ -2,6 +2,7 @@
 """One bounded model request over server-selected, user-owned journal data."""
 
 import json
+import os
 import threading
 import time
 from pathlib import Path
@@ -9,7 +10,7 @@ from urllib.parse import urlsplit
 
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import CredentialUnavailableError
-from azure.identity.aio import AzureCliCredential, get_bearer_token_provider
+from azure.identity.aio import AzureCliCredential, WorkloadIdentityCredential, get_bearer_token_provider
 from fastapi import HTTPException
 from openai import APIConnectionError, APIError, AsyncOpenAI, RateLimitError
 
@@ -73,6 +74,8 @@ class FoundrySummarizer:
             (Path(__file__).resolve().parents[1] / "security" / "foundry.json")
             .read_text(encoding="utf-8")
         )
+        # Explicit deployment setting; never try other identities on failure.
+        self.credential_type = os.environ.get("FOUNDRY_CREDENTIAL_TYPE", self.config["credential_type"])
         endpoint = urlsplit(self.config["base_url"])
         if (
             endpoint.scheme != "https"
@@ -80,14 +83,25 @@ class FoundrySummarizer:
             or not endpoint.hostname.endswith(".openai.azure.com")
             or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment
             or endpoint.path != "/openai/v1/"
-            or self.config["credential_type"] != "azure_cli"
+            or self.credential_type not in {"azure_cli", "workload_identity"}
         ):
             raise ValueError("Invalid server-side Foundry configuration")
+
+    def credential(self):
+        if self.credential_type == "azure_cli":
+            return AzureCliCredential(tenant_id=self.config["tenant_id"])
+        if (
+            os.environ.get("AZURE_TENANT_ID") != self.config["tenant_id"]
+            or not os.environ.get("AZURE_CLIENT_ID")
+            or not os.environ.get("AZURE_FEDERATED_TOKEN_FILE")
+        ):
+            raise CredentialUnavailableError("Expected workload identity is unavailable")
+        return WorkloadIdentityCredential(tenant_id=self.config["tenant_id"])
 
     async def summarize(self, notes: list[dict]) -> str:
         payload = notes_payload(notes)
         try:
-            async with AzureCliCredential(tenant_id=self.config["tenant_id"]) as credential:
+            async with self.credential() as credential:
                 token_provider = get_bearer_token_provider(
                     credential, "https://cognitiveservices.azure.com/.default"
                 )

@@ -72,4 +72,10 @@ resource "azurerm_role_assignment" "api_foundry" {
   skip_service_principal_aad_check = true
 }
 
-# Existing developer RBAC remains separate from the API runtime role.
+# Existing developer RBAC remains separate and is adopted for reproducibility.
+resource "azurerm_role_assignment" "developer_foundry" {
+  scope                = azurerm_cognitive_account.foundry.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = var.aks_admin_object_id
+  principal_type       = "User"
+}

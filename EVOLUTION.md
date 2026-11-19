@@ -1,7 +1,7 @@
 <!-- Zweck: Dokumentiert bestätigte Ergebnisse und noch offene Abnahmepunkte des Wochenprojekts. -->
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-19. Approximate progress 85%; implementation estimates are not
+Status: 2026-11-19. Approximate progress 90%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
 
 ## Authenticated public acceptance (2026-11-19)
@@ -138,11 +138,18 @@ then secure credential provisioning and database Terraform configuration.
 ## AI extension to preserve through migration
 
 - [x] Actual stored own notes summarized, with authenticated user separation.
-- [ ] Replace local Azure CLI credential with AKS Workload Identity.
+- [x] AKS uses explicit Workload Identity mode; local CLI mode remains available
+  only for local development. Workflow44536752654 delivered commit1912e1a;
+  subsequent env rollout and real three-note RAM-only inference passed.
+  Evidence ../artifacts/azure/foundry-workload-inference-check.json.
 - [x] Model deployment and application RBAC expressed in Terraform; user applied
   foundry-runtime.tfplan: 2 added, 0 changed, 0 destroyed. Model gpt-5-mini,
   version2025-08-07, GlobalStandard capacity1; API inference role scoped to account.
-- [ ] Verify stored-note summary on Azure-hosted application without key exposure.
+- [x] User confirmed authenticated public stored-own-note summary: HTTP200,
+  note_count1 and ai_generated:true at2026-11-19T13:57:57.035005Z. Content matches
+  the stored cloud note. Credential-free response saved in
+  ../artifacts/azure/cloud-stored-note-summary-check.json; original token-bearing
+  screenshot was not copied. Separate three-note runtime inference also passed.
 
 ## Optional scope
 

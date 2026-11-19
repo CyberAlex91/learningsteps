@@ -1,7 +1,23 @@
 <!-- Zweck: Erklärt Entra-Anmeldung, Nutzertrennung und die nachgewiesene lokale KI-Integration. -->
 # DEVSECOPS 15 Ex 2 – sichere KI-Zusammenfassung
 
-## Cloud identity rollout (2026-11-19; backend delivery pending)
+## Cloud identity and stored-note summary verified (2026-11-19)
+
+Commit1912e1a passed full workflow44536752654 and was delivered to AKS.
+FOUNDRY_CREDENTIAL_TYPE=workload_identity was then set on the live Deployment;
+rollout succeeded with two Ready API pods. An actual SDK invocation inside an API
+pod returned a completed summary of three RAM-only synthetic notes using
+workload_identity, without CLI or API keys. Topics Terraform, Kubernetes probes
+and JWT are represented in the answer. Evidence:
+../artifacts/azure/foundry-workload-inference-check.json.
+User subsequently confirmed authenticated POST /me/notes/summary over public HTTPS:
+HTTP200, note_count1, ai_generated:true, generated_at2026-11-19T13:57:57.035005Z.
+Response matches the existing stored cloud note (AKS/HTTPS, networking/certificates,
+GitHub Actions intention). Evidence: ../artifacts/azure/cloud-stored-note-summary-check.json.
+The supplied screenshot included a bearer-token header and was not copied into
+project evidence or submission files. Only the credential-free response was saved.
+This completes the stored-own-note route acceptance; it is not a live second-user
+account test. User isolation remains covered by the earlier synthetic identities.
 
 The backend now accepts the explicit server-side environment setting
 FOUNDRY_CREDENTIAL_TYPE=workload_identity. It requires the expected tenant plus
@@ -21,7 +37,7 @@ Bootstrap deployment.yaml now declares the environment setting. Existing CI
 delivery changes only the image; after applying the infrastructure and delivering
 the new backend code, set this one environment value on the live deployment and
 wait for rollout. Do not reapply the old bootstrap image just to change an env var.
-Actual Workload Identity inference and authenticated cloud summary remain pending.
+Actual Workload Identity inference and authenticated stored-own-note summary both passed.
 
 ## Implementierung und aktueller Status
 

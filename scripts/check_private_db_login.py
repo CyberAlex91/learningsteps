@@ -3,7 +3,9 @@
 
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -11,7 +13,7 @@ import sys
 POD = "learningsteps-db-login-check"
 NAMESPACE = "learningsteps"
 HOST = "psql-learningsteps-alex-0ad5f630.postgres.database.azure.com"
-IMAGE = "sha256:de2ed68b2b5d9b6a253d08155d8ccd307d532fa489b0bab7a755b186476de2df"
+IMAGE = os.environ.get("LEARNINGSTEPS_DIAGNOSTIC_IMAGE", "acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:de2ed68b2b5d9b6a253d08155d8ccd307d532fa489b0bab7a755b186476de2df")
 
 # Only this code (without the password) appears in kubectl's process arguments.
 # JSON credentials are transmitted through the exec stream's standard input.
@@ -57,6 +59,24 @@ def capture(arguments, **kwargs):
     return result.stdout.strip()
 
 
+def create_diagnostic_pod():
+    if not re.fullmatch(r"acrlearningstepsalex0ad5f630\.azurecr\.io/learningsteps-api@sha256:[a-f0-9]{64}", IMAGE):
+        raise RuntimeError("Unexpected diagnostic image")
+    manifest = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": POD, "namespace": NAMESPACE},
+                "spec": {"restartPolicy": "Never", "activeDeadlineSeconds": 600,
+                         "automountServiceAccountToken": False,
+                         "securityContext": {"runAsNonRoot": True, "runAsUser": 10001,
+                                             "seccompProfile": {"type": "RuntimeDefault"}},
+                         "containers": [{"name": "check", "image": IMAGE,
+                                         "command": ["python", "-c", "import time; time.sleep(590)"],
+                                         "securityContext": {"readOnlyRootFilesystem": True,
+                                                             "allowPrivilegeEscalation": False,
+                                                             "capabilities": {"drop": ["ALL"]}},
+                                         "resources": {"requests": {"cpu": "50m", "memory": "32Mi"},
+                                                       "limits": {"cpu": "250m", "memory": "128Mi"}}}]}}
+    capture(["kubectl", "create", "-f", "-"], input=json.dumps(manifest))
+
+
 def main():
     app = Path(__file__).resolve().parents[1]
     context = capture(["kubectl", "config", "current-context"])
@@ -71,10 +91,7 @@ def main():
 
     created = False
     try:
-        capture([
-            "kubectl", "apply", "-f",
-            str(app / "k8s-manifests" / "diagnostics" / "db-login-check.yaml"),
-        ])
+        create_diagnostic_pod()
         created = True
         capture([
             "kubectl", "wait", "--for=condition=Ready", "pod/" + POD,

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import sys
 
-from check_private_db_login import HOST, IMAGE, NAMESPACE, POD, capture
+from check_private_db_login import HOST, IMAGE, NAMESPACE, POD, capture, create_diagnostic_pod
 
 
 REMOTE_CONFIGURE = r'''
@@ -149,7 +149,7 @@ def main():
     access_sql = (app / "database" / "cloud_access.sql").read_text(encoding="utf-8")
     created = False
     try:
-        capture(["kubectl", "apply", "-f", str(app / "k8s-manifests" / "diagnostics" / "db-login-check.yaml")])
+        create_diagnostic_pod()
         created = True
         capture(["kubectl", "wait", "--for=condition=Ready", "pod/" + POD, "-n", NAMESPACE, "--timeout=180s"])
         print("PASS: isolated setup pod Ready", flush=True)

@@ -13,6 +13,7 @@ ist bisher nicht implementiert.
 - [DATEIUEBERSICHT.md](DATEIUEBERSICHT.md): Zweck jeder eigenen Repository-Datei.
 - [infra-terraform/README.md](infra-terraform/README.md): Azure-Infrastruktur und State.
 - [k8s-manifests/README.md](k8s-manifests/README.md): Kubernetes und Betriebsprüfungen.
+- [RECOVERY.md](RECOVERY.md): geprüfte Daten-/Release-Sicherung und kontrollierter Wiederaufbau.
 - [CI-CD.md](CI-CD.md): GitHub-Prüfungen und OIDC-Auslieferung.
 - [SECURITY-SCANS.md](SECURITY-SCANS.md): Scanergebnisse und eingeordnete Fehlalarme.
 - [AI-INTEGRATION.md](AI-INTEGRATION.md): Entra, Nutzertrennung und lokale KI-Abnahme.
@@ -25,11 +26,11 @@ Entra prüft die Nutzeranmeldung. Die API begrenzt Einträge auf die geprüfte
 Tenant-/Nutzeridentität. Die Datenbank-URL kommt über Workload Identity und
 Key Vault CSI als Datei in den API-Pod; sie steht nicht im Manifest oder Browser.
 
-Die KI-Zusammenfassung wird serverseitig erzeugt. Die lokale Tagesaufgabe ist
-nachgewiesen; die Umstellung auf Workload Identity für Foundry im Cluster ist
-noch offen. Das Foundry-Modell wurde nach der Tagesaufgabe entfernt und muss
-kontrolliert durch Terraform wieder eingebunden werden. Nicht als bereits
-funktionierende Cloud-KI beschreiben.
+Die KI-Zusammenfassung wird serverseitig erzeugt. Das Modell und das eingeschränkte
+Zugriffsrecht sind in Terraform verwaltet. Die API verwendet im Cluster ausdrücklich
+Workload Identity. Ein echter Modellaufruf aus AKS mit drei synthetischen Notizen
+ist nachgewiesen. Auch der angemeldete Cloud-Aufruf hat die gespeicherte eigene
+Notiz erfolgreich zusammengefasst. Die lokale KI-Tagesaufgabe ist bereits nachgewiesen.
 
 ## API benutzen
 

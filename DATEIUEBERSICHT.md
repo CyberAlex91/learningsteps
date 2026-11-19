@@ -108,3 +108,11 @@ JSON-Dateien erlauben keine Kommentare. Erzeugte Sperrdateien, private Eingaben,
 | [tests/test_summary.py](tests/test_summary.py) | Prüft Zusammenfassungslogik und sichere Begrenzung der Modellanfragen. |
 
 Diese Übersicht ist selbst die Erklärung der Dateizwecke. Nicht im Quellenkatalog: `.git`, `venv`, `.terraform`, private `.env`/lokale `.tfvars.json`. Diese verwalteten beziehungsweise privaten Dateien bleiben unverändert.
+
+## Abschluss und Wiederherstellung
+
+| Datei | Aufgabe |
+| --- | --- |
+| [RECOVERY.md](RECOVERY.md) | Beschreibt Sicherung, Abbau, Wiederherstellung und Aussagegrenzen. |
+| [scripts/cloud_data_backup.py](scripts/cloud_data_backup.py) | Verschlüsselt alle Anwendungsdaten und prüft isolierten beziehungsweise leeren Restore. |
+| [scripts/recovery.py](scripts/recovery.py) | Sichert Images/Zertifikate und orchestriert den kontrollierten Wiederaufbau. |

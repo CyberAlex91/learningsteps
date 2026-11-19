@@ -1,21 +1,23 @@
+# Zweck: Stellt authentifizierte HTTP-Endpunkte zum Verwalten eigener Einträge bereit.
 from typing import AsyncGenerator
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, Depends
 from repositories.postgres_repository import PostgresDB
 from services.entry_service import EntryService
 from models.entry import Entry, EntryCreate, EntryUpdate
+from security.dependencies import current_user
+from security.identity import Principal
 
 
 router = APIRouter()
 
-# TODO: Add authentication middleware
 # TODO: Add request validation middleware
 # TODO: Add rate limiting middleware
 # TODO: Add API versioning
 # TODO: Add response caching
 
-async def get_entry_service() -> AsyncGenerator[EntryService, None]:
-    async with PostgresDB() as db:
+async def get_entry_service(user: Principal = Depends(current_user)) -> AsyncGenerator[EntryService, None]:
+    async with PostgresDB(user) as db:
         yield EntryService(db)
 
 @router.post("/entries")
@@ -29,7 +31,7 @@ async def create_entry(entry_data: EntryCreate, entry_service: EntryService = De
 # Example response: [{"id": "123", "work": "...", "struggle": "...", "intention": "..."}]
 @router.get("/entries")
 async def get_all_entries(entry_service: EntryService = Depends(get_entry_service)):
-    """Get all journal entries."""
+    """Get all journal entries belonging to the signed-in user."""
     result = await entry_service.get_all_entries()
     return {"entries": result, "count": len(result)}
 
@@ -60,6 +62,6 @@ async def delete_entry(entry_id: UUID, entry_service: EntryService = Depends(get
 
 @router.delete("/entries")
 async def delete_all_entries(entry_service: EntryService = Depends(get_entry_service)):
-    """Delete all journal entries"""
+    """Delete only the signed-in user's journal entries."""
     await entry_service.delete_all_entries()
-    return {"detail": "All entries deleted"}
+    return {"detail": "All your entries deleted"}

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Zweck: Startet FastAPI für die lokale Entwicklung mit der vorhandenen Python-Umgebung.
 
 # LearningSteps API Startup Script
 echo "🚀 Starting LearningSteps API..."

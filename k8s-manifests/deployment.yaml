@@ -1,0 +1,111 @@
+# Zweck: Definiert die API-Pods mit Probes, Ressourcenlimits und CSI-Geheimnismount.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learningsteps-api
+  namespace: learningsteps
+spec:
+  # Initial count; HPA manages replicas after creation.
+  replicas: 2
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 300
+  selector:
+    matchLabels:
+      app: learningsteps-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: learningsteps-api
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: learningsteps-api
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: learningsteps-api
+      containers:
+        - name: api
+          image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:58023fe9aaa027e22ec008a7b137cc3a93d1727965e801a44cb642f5b5628171
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: FOUNDRY_CREDENTIAL_TYPE
+              value: workload_identity
+            - name: DATABASE_URL_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: learningsteps-api-config
+                  key: DATABASE_URL_FILE
+          volumeMounts:
+            - name: database-credentials
+              mountPath: /mnt/secrets-store
+              readOnly: true
+            - name: public-auth-config
+              mountPath: /app/security/entra.json
+              subPath: entra.json
+              readOnly: true
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: database-credentials
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: learningsteps-api-vault
+        - name: public-auth-config
+          configMap:
+            name: learningsteps-api-config
+            items:
+              - key: entra.json
+                path: entra.json

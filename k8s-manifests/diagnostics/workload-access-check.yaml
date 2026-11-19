@@ -1,0 +1,49 @@
+# Zweck: Definiert einen Diagnose-Pod für Workload Identity und den eingeschränkten CSI-Mount.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: learningsteps-workload-access-check
+  namespace: learningsteps
+  labels:
+    azure.workload.identity/use: "true"
+    app.kubernetes.io/part-of: learningsteps
+    app.kubernetes.io/component: diagnostic
+spec:
+  serviceAccountName: learningsteps-api
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 600
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: check
+      image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:58023fe9aaa027e22ec008a7b137cc3a93d1727965e801a44cb642f5b5628171
+      command: ["python", "-c", "import time; time.sleep(590)"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 192Mi
+      volumeMounts:
+        - name: database-credentials
+          mountPath: /mnt/secrets-store
+          readOnly: true
+  volumes:
+    - name: database-credentials
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: learningsteps-api-vault

@@ -1,0 +1,66 @@
+# Zweck: Prüft privates Datenbank-DNS, TCP und TLS ohne SQL-Anmeldung.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: learningsteps-db-network-check
+  namespace: learningsteps
+  labels:
+    app.kubernetes.io/part-of: learningsteps
+    app.kubernetes.io/component: diagnostic
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 180
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: check
+      image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-api@sha256:58023fe9aaa027e22ec008a7b137cc3a93d1727965e801a44cb642f5b5628171
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi
+      command: ["python", "-c"]
+      args:
+        - |
+          import ipaddress
+          import socket
+          import ssl
+          import struct
+
+          host = "psql-learningsteps-alex-0ad5f630.postgres.database.azure.com"
+          expected = ipaddress.ip_network("10.62.1.0/24")
+          addresses = sorted({
+              item[4][0] for item in socket.getaddrinfo(
+                  host, 5432, family=socket.AF_INET, type=socket.SOCK_STREAM
+              )
+          })
+          if not addresses or any(ipaddress.ip_address(ip) not in expected for ip in addresses):
+              raise RuntimeError("DNS did not return only addresses in the expected private DB subnet")
+          print("PASS: DNS resolves to expected private subnet:", ", ".join(addresses), flush=True)
+
+          with socket.create_connection((addresses[0], 5432), timeout=10) as connection:
+              print("PASS: TCP port 5432 reachable from AKS", flush=True)
+              # PostgreSQL SSLRequest asks for TLS before authentication.
+              connection.sendall(struct.pack("!II", 8, 80877103))
+              if connection.recv(1) != b"S":
+                  raise RuntimeError("PostgreSQL did not accept TLS negotiation")
+              context = ssl.create_default_context()
+              context.minimum_version = ssl.TLSVersion.TLSv1_2
+              with context.wrap_socket(connection, server_hostname=host) as encrypted:
+                  print("PASS: TLS certificate chain and hostname verified; protocol="
+                        + encrypted.version(), flush=True)
+          print("SUCCESS: private DNS, TCP and verified TLS; no login or SQL executed", flush=True)

@@ -1,225 +1,74 @@
-# LearningSteps API
-
-> **Origins - Implementierungsstand, 19.10.2026**
->
-> Dieser Fork enthält die fertige API mit Einzelabruf, Einzellöschung, Logging,
-> Eingabevalidierung und atomaren Teiländerungen. Die sechs Feature-PRs sind
-> zusammengeführt: [PR-Verlauf](https://github.com/Oklahomajoe/learningsteps/pulls?q=is%3Apr+is%3Amerged).
->
-> Der kombinierte Stand hat 41 lokale Integrationsprüfungen bestanden. Die
-> separate Azure-Bereitstellung wurde einschließlich HTTPS, Zugriffsschutz,
-> Netzwerktrennung und Persistenz bei API-Neubereitstellung und VM-Neustart geprüft.
-> [Testdurchführung und Grenzen](tests/README.md).
->
-> Der technische Bericht und der vollständige Neuaufbau in einer frischen
-> separaten Azure-Gruppe sind abgeschlossen. Datenimport, neue Zertifikate,
-> HTTPS und ein erneuter API-VM-Neustart wurden erfolgreich geprüft. Danach
-> wurden beide Projektgruppen entfernt. Die API ist in der Kostenpause
-> absichtlich offline. Startskript, Demoablauf und Nachweise liegen im
-> Abgabepaket; private Wiederherstellungsdateien bleiben lokal. Noch keine Kurseinreichung.
-> Die folgenden Abschnitte enthalten die ursprünglichen Einrichtungshinweise
-> und die nun umgesetzten Aufgaben der Developer-Version.
-
-Welcome to LearningSteps! LearningSteps is a Python FastAPI + PostgreSQL application that helps people track their daily learning journey. In this project, you will build, extend, and finally deploy LearningSteps to the cloud!
-
-
-## Table of Contents
-
-- [🚀 Getting Started](#-getting-started)
-- [🎯 Development Tasks (Your Work!)](#-development-tasks-your-work)
-  - [1. API Implementation (Required)](#1-api-implementation-required)
-  - [2. Logging Setup (Required)](#2-logging-setup-required)
-  - [3. Data Model Improvements (Optional)](#3-data-model-improvements-optional)
-  - [4. Cloud CLI Setup (Required for Deployment)](#4-cloud-cli-setup-required-for-deployment)
-- [📊 Data Schema](#-data-schema)
-- [�️ Explore Your Database (Optional)](#️-explore-your-database-optional)
-- [🔧 Troubleshooting](#-troubleshooting)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Git installed on your machine
-- Docker Desktop installed and running
-- VS Code with the Dev Containers extension
-
-### 1. Fork and Clone the Repository
-
-1. **Fork this repository** to your GitHub account by clicking the "Fork" button
-1. **Clone your fork** to your local machine:
-
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/learningsteps.git
-   ```
-
-1. Move into the project directory:
-
-   ```bash
-   cd learningsteps
-   ```
-
-1. **Open in VS Code**:
-
-   ```bash
-   code .
-   ```
-
-### 2. Configure Your Environment (.env)
-
-Environment variables live in a `.env` file (which is **git-ignored** so you don't accidentally commit secrets). This repo ships with a template named `.env-sample`.
-
-1. Copy the sample file to create your real `.env`:
-
-   ```bash
-   cp .env-sample .env
-   ```
-
-### 3. Set Up Your Development Environment
-
-1. **Install the Dev Containers extension** in VS Code (if not already installed)
-2. **Reopen in container**: When VS Code detects the `.devcontainer` folder, click "Reopen in Container"
-   - Or use Command Palette (`Cmd/Ctrl + Shift + P`): `Dev Containers: Reopen in Container`
-3. **Wait for setup**: The API container will automatically install Python, dependencies, and configure your environment.
-   The PostgreSQL Database container will also automatically be created.
-
-### 4. Verify the PostgreSQL Database Is Running
-
-In a terminal outside of VS Code, run:
-
-   ```bash
-      docker ps
-   ```
-
-You should see the postgres service running.
-
-### 5. Run the API
-
-Make sure you are in the root of your project in the terminal (inside VS Code, while container is running):
-
-   ```bash
-     ./start.sh
-   ```
-
-### 6. Test Everything Works! 🎉
-
-1. **Visit the API docs**: http://localhost:8000/docs
-1. **Create your first entry** In the Docs UI Use the POST `/entries` endpoint to create a new journal entry.
-1. **View your entries** using the GET `/entries` endpoint to see what you've created!
-
-**🎯 Once you can create and see entries, you're ready to start implementing the missing endpoints!**
-
-## Your Learning Goals
-
-Complete a learning journal API that allows users to:
-
-- ✅ **Store journal entries** (already implemented)
-- ✅ **Retrieve all journal entries** (already implemented)
-- ✅ **Retrieve single journal entry** (implemented in this fork)
-- ✅ **Delete specific journal entries** (implemented in this fork)
-- ✅ **Update journal entries** (already implemented)
-- ✅ **Delete all entries** (already implemented)
-- ✅ **Setup logging** (implemented in this fork)
-
-## 🎯 Development Tasks (Your Work!)
-
-You'll use **feature branches** and **Pull Requests (PRs)** for each task. Complete these tasks in your forked repository using feature branches.
-
-### 1. API Implementation (Required)
-
-#### Task 1a: GET Single Entry Endpoint
-
-- Branch: `feature/get-single-entry`
-- [x] Implement **GET /entries/{entry_id}** in `api/routers/journal_router.py`
-
-#### Task 1b: DELETE Single Entry Endpoint
-
-- Branch: `feature/delete-entry`
-- [x] Implement **DELETE /entries/{entry_id}** in `api/routers/journal_router.py`
-
-### 2. Logging Setup (Required)
-
-- Branch: `feature/logging-setup`
-- [x] Configure logging in `api/main.py`
-
-### 3. Data Model Improvements (Optional)
-
-- Branch: `feature/data-model-improvements`  
-- [x] Add validators to `api/models/entry.py`
-
-### 4. Cloud CLI Setup (Required for Deployment)
-
-- Branch: `feature/cloud-cli-setup`
-- [x] Uncomment one CLI tool in `.devcontainer/devcontainer.json`
-
-## 📊 Data Schema
-
-Each journal entry follows this structure:
-
-| Field       | Type      | Description                                | Validation                   |
-|-------------|-----------|--------------------------------------------|------------------------------|
-| id          | string    | Unique identifier (UUID)                   | Auto-generated               |
-| work        | string    | What did you work on today?                | Required, max 256 characters |
-| struggle    | string    | What's one thing you struggled with today? | Required, max 256 characters |
-| intention   | string    | What will you study/work on tomorrow?      | Required, max 256 characters |
-| created_at  | datetime  | When entry was created                     | Auto-generated UTC           |
-| updated_at  | datetime  | When entry was last updated                | Auto-updated UTC             |
-
-## 🗄️ Explore Your Database (Optional)
-
-Want to see your data directly in the database? You can connect to PostgreSQL using VS Code's PostgreSQL extension:
-
-### 1. Install PostgreSQL Extension
-
-1. **Install the PostgreSQL extension** in VS Code (search for "PostgreSQL" by Chris Kolkman)
-2. **Restart VS Code** after installation
-
-### 2. Connect to Your Database
-
-1. **Open the PostgreSQL extension** (click the PostgreSQL icon in the sidebar)
-2. **Click "Add Connection"** or the "+" button
-3. **Enter these connection details**:
-   - **Host name**: `postgres`
-   - **User name**: `postgres`
-   - **Password**: `postgres`
-   - **Port**: `5432`
-   - **Conection Type**: `Standard/No SSL`
-   - **Database**: `learning_journal`
-   - **Display name**: `Learning Journal DB` (or any name you prefer)
-
-### 3. Explore Your Data
-
-1. **Expand your connection** in the PostgreSQL panel
-2. **Left-click on "Learning Journal DB" to expand**
-3. **Right-click on "learning_journal"**
-4. **Select "New Query"**
-5. **Type this query** to see all your entries:
-
-   ```sql
-   SELECT * FROM entries;
-   ```
-
-6. **Run the query** to see all your journal data! (Ctrl/Cmd + Enter OR use the PostgreSQL command pallete: Run Query)
-
-You can now explore the database structure, see exactly how your data is stored, and run custom queries to understand PostgreSQL better.
-
-## 🔧 Troubleshooting
-
-**If the API won't start:**
-
-- Make sure the PostgreSQL container is running: `docker ps`
-- Check the container logs: `docker logs your-postgres-container-name`
-- Restart the database: `docker restart your-postgres-container-name`
-
-**If you can't connect to the database:**
-
-- Verify the `.env` file exists and has the correct DATABASE_URL
-- Make sure Docker Desktop is running
-- Try restarting the dev container: `Dev Containers: Rebuild Container`
-
-**If the dev container won't open:**
-
-- Ensure Docker Desktop is running
-- Install the "Dev Containers" extension in VS Code
-- Try: `Dev Containers: Rebuild and Reopen in Container`
+<!-- Zweck: Erklärt die Anwendung, Architektur und den Einstieg in die aktuelle Evolution-Phase. -->
+# LearningSteps Evolution
+
+LearningSteps ist ein Lerntagebuch: angemeldete Nutzer speichern ihre Arbeit
+(`work`), Schwierigkeiten (`struggle`) und nächsten Schritte (`intention`).
+FastAPI stellt die API bereit, PostgreSQL speichert die Einträge. Swagger unter
+`/docs` ist die technische Bedienoberfläche; ein separates Benutzer-Frontend
+ist bisher nicht implementiert.
+
+## Aktueller Stand und Orientierung
+
+- [EVOLUTION.md](EVOLUTION.md): nachgewiesene Ergebnisse und offene Projektaufgaben.
+- [DATEIUEBERSICHT.md](DATEIUEBERSICHT.md): Zweck jeder eigenen Repository-Datei.
+- [infra-terraform/README.md](infra-terraform/README.md): Azure-Infrastruktur und State.
+- [k8s-manifests/README.md](k8s-manifests/README.md): Kubernetes und Betriebsprüfungen.
+- [RECOVERY.md](RECOVERY.md): geprüfte Daten-/Release-Sicherung und kontrollierter Wiederaufbau.
+- [CI-CD.md](CI-CD.md): GitHub-Prüfungen und OIDC-Auslieferung.
+- [SECURITY-SCANS.md](SECURITY-SCANS.md): Scanergebnisse und eingeordnete Fehlalarme.
+- [AI-INTEGRATION.md](AI-INTEGRATION.md): Entra, Nutzertrennung und lokale KI-Abnahme.
+- [tests/README.md](tests/README.md): Testumfang und Voraussetzungen.
+
+## Architektur
+
+Browser → HTTPS-Gateway auf AKS → interne FastAPI-API → private PostgreSQL-Datenbank.
+Entra prüft die Nutzeranmeldung. Die API begrenzt Einträge auf die geprüfte
+Tenant-/Nutzeridentität. Die Datenbank-URL kommt über Workload Identity und
+Key Vault CSI als Datei in den API-Pod; sie steht nicht im Manifest oder Browser.
+
+Die KI-Zusammenfassung wird serverseitig erzeugt. Das Modell und das eingeschränkte
+Zugriffsrecht sind in Terraform verwaltet. Die API verwendet im Cluster ausdrücklich
+Workload Identity. Ein echter Modellaufruf aus AKS mit drei synthetischen Notizen
+ist nachgewiesen. Auch der angemeldete Cloud-Aufruf hat die gespeicherte eigene
+Notiz erfolgreich zusammengefasst. Die lokale KI-Tagesaufgabe ist bereits nachgewiesen.
+
+## API benutzen
+
+Cloud: https://learningsteps-alex-0ad5f630.germanywestcentral.cloudapp.azure.com/docs
+
+Lokal: http://localhost:8000/docs
+
+In Swagger über **Authorize** mit Entra anmelden. `GET /me` prüft die Identität.
+`POST /entries` legt eine eigene Notiz an; `GET /entries` zeigt eigene Notizen.
+`GET`, `PATCH` und `DELETE /entries/{entry_id}` arbeiten auf einem eigenen Eintrag.
+`DELETE /entries` löscht alle eigenen Einträge und ist kein routinemäßiger Testschritt.
+`POST /me/notes/summary` fasst gespeicherte eigene Notizen zusammen, sofern das Modell
+und die serverseitige Identität verfügbar sind.
+
+## Entwicklung und Auslieferung
+
+Azure-, Git- und Kubernetes-Schritte erfolgen im WSL-Terminal von VS Code.
+Docker Desktop ist die verwendete lokale Engine. Im übergeordneten Projektordner
+liegen `Start-Lokal.ps1` und `Stop-Lokal.ps1` für PowerShell. `start.sh` startet
+FastAPI im lokalen Entwicklungscontainer mit der vorhandenen Python-Umgebung.
+`.env` bleibt privat; `.env-sample` enthält nur lokale Beispielwerte.
+
+GitHub Actions prüft Python, Nutzertrennung mit einer isolierten Testdatenbank,
+Quellen/Images/Terraform und die vollständige gefetchte Git-Historie. Nur ein
+Push auf `main` im festgelegten Repository darf nach bestandenen Prüfungen über
+OIDC unveränderte geprüfte Images nach ACR und AKS liefern. Die exakte Föderation
+und der Workflow verwenden denselben Branch.
+
+Terraform-Änderungen: formatieren, validieren, Plan erstellen und prüfen, dann
+den geprüften Plan anwenden. Alte gespeicherte Pläne wurden entfernt; vor einer
+neuen Anwendung immer neu planen. `terraform destroy` ist bis zum vorbereiteten
+Backup-/Wiederaufbautest kein Routinebefehl.
+
+## Aufbewahrung
+
+Anwendung, Infrastruktur, Tests und reproduzierbare Betriebsprüfungen bleiben
+im Repository. Aktuelle Nachweise liegen außerhalb von Git im übergeordneten
+`artifacts`-Ordner. Die historische Origins-Abgabe ist dort unter `Abgabe` erhalten;
+überholte anonyme Tests und die verworfene Caddy-Konfiguration sind entfernt.
+Geheimnisse, Backups, State, venv und Providercache sind keine kommentierbaren
+Projektquellen und werden weder veröffentlicht noch pauschal bereinigt.

@@ -1,3 +1,4 @@
+# Zweck: Definiert die gemeinsame Schnittstelle zum Speichern und Lesen von Einträgen.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 

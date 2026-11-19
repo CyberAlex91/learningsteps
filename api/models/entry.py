@@ -1,3 +1,4 @@
+# Zweck: Validiert Eingaben und Ausgaben der Lerntagebuch-Einträge.
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing import Optional
 from datetime import datetime, timezone

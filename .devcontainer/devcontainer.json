@@ -1,3 +1,4 @@
+// Zweck: Konfiguriert den VS-Code-Entwicklungscontainer mit Docker Compose und Azure CLI.
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {

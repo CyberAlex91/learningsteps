@@ -1,0 +1,14 @@
+# Zweck: Stellt öffentliche API-Konfiguration und den Pfad zur Geheimnisdatei bereit.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learningsteps-api-config
+  namespace: learningsteps
+data:
+  DATABASE_URL_FILE: /mnt/secrets-store/database-url
+  entra.json: |
+    {
+      "tenant_id": "c0531484-50fa-4ff2-97df-b1f2d4810603",
+      "api_client_id": "709d408c-fdfd-4fcf-8cf4-f6378c8fe6ff",
+      "swagger_client_id": "7f3bbd70-2330-4f0c-8ecd-1e66936aaa15"
+    }

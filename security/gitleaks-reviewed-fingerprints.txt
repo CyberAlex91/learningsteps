@@ -1,0 +1,7 @@
+# Zweck: Erlaubt ausschließlich einzeln geprüfte historische Docker-Tag-Fehlalarme.
+# Reviewed 2026-11-19: original documentation matches and one repetition in
+# the review documentation identify the public image tag evolution-cc8174d.
+# No rule/file/commit-wide suppression. Any other finding still fails.
+6e60970eab913620f4eac8c5c70efbb3b55b7646:SECURITY-SCANS.md:generic-api-key:26
+6e60970eab913620f4eac8c5c70efbb3b55b7646:infra-terraform/README.md:generic-api-key:111
+61758ee3fb5ca9b874cadb868d52248aef960ae9:SECURITY-SCANS.md:generic-api-key:17

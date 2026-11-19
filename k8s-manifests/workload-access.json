@@ -1,0 +1,34 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "learningsteps-api",
+        "namespace": "learningsteps",
+        "annotations": {
+          "azure.workload.identity/client-id": "__API_CLIENT_ID__",
+          "azure.workload.identity/tenant-id": "c0531484-50fa-4ff2-97df-b1f2d4810603"
+        }
+      },
+      "automountServiceAccountToken": false
+    },
+    {
+      "apiVersion": "secrets-store.csi.x-k8s.io/v1",
+      "kind": "SecretProviderClass",
+      "metadata": {"name": "learningsteps-api-vault", "namespace": "learningsteps"},
+      "spec": {
+        "provider": "azure",
+        "parameters": {
+          "usePodIdentity": "false",
+          "clientID": "__API_CLIENT_ID__",
+          "keyvaultName": "kv-lsteps-0ad5f630",
+          "tenantId": "c0531484-50fa-4ff2-97df-b1f2d4810603",
+          "objects": "array:\n  - |\n    objectName: postgres-app-database-url\n    objectType: secret\n    objectAlias: database-url\n    filePermission: \"0444\"\n"
+        }
+      }
+    }
+  ]
+}

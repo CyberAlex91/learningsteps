@@ -1,3 +1,4 @@
+# Zweck: Begrenzt den Docker-Buildkontext auf benötigte API-Dateien und schließt Geheimnisse aus.
 **
 !Dockerfile
 !api/

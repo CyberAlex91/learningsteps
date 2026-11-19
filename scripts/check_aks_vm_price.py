@@ -1,3 +1,4 @@
+# Zweck: Fragt öffentliche Azure-Listenpreise für die gewählte AKS-VM-Größe ab.
 """Read public EUR VM list prices; no Azure login or resource changes."""
 
 import json

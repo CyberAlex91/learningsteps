@@ -1,3 +1,4 @@
+# Zweck: Prüft gehärteten Containerstart und Ablehnung anonymer geschützter API-Anfragen.
 """Run through stdin inside the production image; no database or Azure access."""
 
 import json

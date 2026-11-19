@@ -1,3 +1,4 @@
+# Zweck: Prüft echte HTTP-/SQL-Nutzertrennung in einer eigenen lokalen Testdatenbank.
 """Real PostgreSQL/HTTP isolation checks in a fresh, exclusively owned test DB.
 
 No Azure requests. No existing notes are modified. Two RSA-signed synthetic

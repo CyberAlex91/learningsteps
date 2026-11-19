@@ -1,3 +1,4 @@
+# Zweck: Prüft privates Datenbank-DNS, TCP und TLS ohne SQL-Anmeldung.
 apiVersion: v1
 kind: Pod
 metadata:

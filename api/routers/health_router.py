@@ -1,3 +1,4 @@
+# Zweck: Liefert minimale Liveness- und Readiness-Antworten für Kubernetes.
 """Unauthenticated probe results contain no configuration or database details."""
 
 import asyncio

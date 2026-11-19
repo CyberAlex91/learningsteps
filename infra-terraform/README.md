@@ -1,3 +1,4 @@
+<!-- Zweck: Beschreibt Terraform-Betrieb, Architekturentscheidungen und Infrastruktur-Nachweise. -->
 # LearningSteps Evolution – Terraform
 
 ## GitHub delivery identity prepared (not applied)

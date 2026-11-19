@@ -1,3 +1,4 @@
+<!-- Zweck: Dokumentiert bestätigte Ergebnisse und noch offene Abnahmepunkte des Wochenprojekts. -->
 # LearningSteps Evolution – acceptance checklist
 
 Status: 2026-11-19. Approximate progress 85%; implementation estimates are not
@@ -112,7 +113,9 @@ then secure credential provisioning and database Terraform configuration.
   remained Ready at completion. Continuous availability was not measured.
 - [x] GitHub Actions on pushes: lint, tests and Docker build.
 - [x] Checkout secret scan, image vulnerability scan, Terraform static security analysis.
-  Full history secret scan is still pending.
+- [x] Local Git history secret scan: 38 available commits; two exact historical
+  Docker-tag false positives reviewed, no remaining detections. Full-checkout
+  CI history scan is implemented and locally checked; remote run still pending.
 - [x] HIGH/CRITICAL findings fail the scanner: intentional isolated negative test
   produced AZU-0047 and AZU-0050 (CRITICAL), exit 1. Delivery was skipped;
   proof branch also excluded independently by trusted-branch condition.

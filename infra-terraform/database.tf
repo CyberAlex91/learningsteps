@@ -1,3 +1,4 @@
+# Zweck: Erstellt die private PostgreSQL-Instanz und Datenbank mit erzwungenem TLS.
 # Read the already persisted credential. Never use a regular secret data source:
 # its value would be written into state. Ephemeral reads and write-only password
 # fields keep the value out of both saved plans and state.

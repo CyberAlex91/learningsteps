@@ -1,3 +1,4 @@
+# Zweck: Erstellt die Azure Container Registry ohne aktiviertes Administratorkonto.
 resource "azurerm_container_registry" "evolution" {
   name                          = "acrlearningstepsalex0ad5f630"
   resource_group_name           = azurerm_resource_group.evolution.name

@@ -1,0 +1,6 @@
+# Zweck: Erlaubt nur zwei einzeln geprüfte historische Docker-Tag-Fehlalarme im Geheimnisscan.
+# Reviewed 2026-11-19: both exact historical matches are the public Docker
+# image tag learningsteps-api:evolution-cc8174d, not authentication material.
+# No rule/file/commit-wide suppression. Any other finding still fails.
+6e60970eab913620f4eac8c5c70efbb3b55b7646:SECURITY-SCANS.md:generic-api-key:26
+6e60970eab913620f4eac8c5c70efbb3b55b7646:infra-terraform/README.md:generic-api-key:111

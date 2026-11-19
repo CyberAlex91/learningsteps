@@ -1,3 +1,4 @@
+-- Zweck: Erstellt die Eintragstabelle und Nutzerzuordnung für eine neue Datenbank.
 -- LearningSteps API Database Setup
 -- This file is automatically ran upon the creation of the PostgresSQL container.
 -- You will notice the following volume mount in the docker-compose.yml file:

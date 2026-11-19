@@ -1,3 +1,4 @@
+# Zweck: Prüft und ergänzt gezielt den öffentlichen Swagger-Rückruf in Entra.
 """Preview/add only the public HTTPS Swagger SPA callback; preserve local URLs."""
 
 import argparse

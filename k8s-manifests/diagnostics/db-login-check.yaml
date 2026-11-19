@@ -1,3 +1,4 @@
+# Zweck: Definiert einen kurzlebigen Diagnose-Pod für kontrollierte Datenbank-Anmeldetests.
 apiVersion: v1
 kind: Pod
 metadata:

@@ -1,3 +1,4 @@
+# Zweck: Stellt öffentliche API-Konfiguration und den Pfad zur Geheimnisdatei bereit.
 apiVersion: v1
 kind: ConfigMap
 metadata:

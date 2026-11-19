@@ -1,3 +1,4 @@
+# Zweck: Stellt die geprüfte Nutzeridentität als FastAPI-Abhängigkeit bereit.
 """The production authentication dependency shared by every protected route."""
 
 from security.identity import AuthSettings, create_current_user_dependency

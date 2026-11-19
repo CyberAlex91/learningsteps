@@ -1,3 +1,4 @@
+# Zweck: Prüft Konfigurationsquellen sowie sichere Liveness- und Readiness-Antworten.
 """Offline checks of secret-file configuration and probe failure behavior."""
 
 import os

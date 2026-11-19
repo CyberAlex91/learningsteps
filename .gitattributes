@@ -1,1 +1,2 @@
+# Zweck: Legt die Behandlung von Textdateien und Zeilenenden durch Git fest.
 *.sh text eol=lf

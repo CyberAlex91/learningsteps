@@ -1,3 +1,4 @@
+# Zweck: Erstellt die öffentliche feste IP und den DNS-Namen für HTTPS.
 # Place the static IP in AKS's existing node resource group. The control-plane
 # identity already manages networking there; no extra broad IAM grant is needed.
 resource "azurerm_public_ip" "https" {

@@ -1,3 +1,4 @@
+# Zweck: Verwaltet die übernommene Foundry-Ressourcengruppe und das schlüssellos konfigurierte Konto.
 # Match the existing resources before changing their configuration.
 resource "azurerm_resource_group" "ai" {
   name     = "rg-learningsteps-ai"

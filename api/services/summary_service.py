@@ -1,3 +1,4 @@
+# Zweck: Fasst eigene Notizen serverseitig zusammen und behandelt Notizinhalte als Daten.
 """One bounded model request over server-selected, user-owned journal data."""
 
 import json

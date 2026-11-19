@@ -1,3 +1,4 @@
+<!-- Zweck: Erklärt Entra-Anmeldung, Nutzertrennung und die nachgewiesene lokale KI-Integration. -->
 # DEVSECOPS 15 Ex 2 – sichere KI-Zusammenfassung
 
 ## Implementierung und aktueller Status

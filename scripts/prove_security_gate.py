@@ -1,3 +1,4 @@
+# Zweck: Erzeugt einen isolierten unsicheren Test-Commit zum Nachweis des CI-Sicherheitsabbruches.
 """Push an isolated negative IaC test without changing checkout/index/HEAD.
 
 Creates a proof branch only. Never applies Terraform, merges, or deploys.

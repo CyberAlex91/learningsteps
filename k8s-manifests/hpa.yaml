@@ -1,3 +1,4 @@
+# Zweck: Skaliert die API CPU-abhängig zwischen zwei und vier Replikaten.
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

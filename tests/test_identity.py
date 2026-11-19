@@ -1,3 +1,4 @@
+# Zweck: Prüft Entra-Tokenvalidierung einschließlich Ablehnung ungültiger Identitäten.
 """Offline authentication tests: ephemeral RSA keys, no Azure or database calls."""
 
 import secrets

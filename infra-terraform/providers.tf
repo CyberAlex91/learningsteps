@@ -1,3 +1,4 @@
+# Zweck: Konfiguriert AzureRM und die Erzeugung beziehungsweise Verwendung von Zufallswerten.
 provider "azurerm" {
   features {
     key_vault {

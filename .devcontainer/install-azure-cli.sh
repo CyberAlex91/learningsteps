@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Zweck: Installiert die Azure CLI für die lokale schlüssellose Entwicklungsanmeldung.
 # Development container only. Do not install the CLI in the API virtualenv.
 set -euo pipefail
 

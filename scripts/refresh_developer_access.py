@@ -1,3 +1,4 @@
+# Zweck: Prüft die aktuelle Entwickler-IP und bereitet optional einen eng begrenzten Terraform-Zugangsplan vor.
 """Detect the developer IPv4; optionally prepare a reviewed Terraform IP plan.
 
 Run in WSL. Default is read-only. --prepare adds the exact current /32 to

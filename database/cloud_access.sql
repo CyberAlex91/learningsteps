@@ -1,3 +1,4 @@
+-- Zweck: Vergibt eingeschränkte Datenrechte an die Cloud-Anwendungsrolle.
 -- Apply only to the dedicated LearningSteps database as its administrator.
 -- Existing note contents and owner assignments are never updated here.
 ALTER TABLE public.entries

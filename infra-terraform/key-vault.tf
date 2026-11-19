@@ -1,3 +1,4 @@
+# Zweck: Erstellt Key Vault mit rollenbasiertem Zugriff und Netzbeschränkungen.
 resource "azurerm_key_vault" "evolution" {
   name                          = "kv-lsteps-0ad5f630"
   resource_group_name           = azurerm_resource_group.evolution.name

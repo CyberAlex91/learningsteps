@@ -1,3 +1,4 @@
+# Zweck: Erstellt AKS mit Entra-Zugriff, Netzwerk, Workload Identity und Container-Registry-Rechten.
 resource "azurerm_user_assigned_identity" "aks_control_plane" {
   name                = "id-learningsteps-aks-control"
   resource_group_name = azurerm_resource_group.evolution.name

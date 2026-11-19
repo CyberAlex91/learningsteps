@@ -1,3 +1,4 @@
+# Zweck: Fragt öffentliche Preispositionen für die PostgreSQL-Kostenplanung ab.
 """Read public PostgreSQL Flexible Server price candidates in EUR; no Azure writes."""
 
 import json

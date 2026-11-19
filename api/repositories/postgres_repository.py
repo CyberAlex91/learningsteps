@@ -1,3 +1,4 @@
+# Zweck: Speichert und liest PostgreSQL-Einträge begrenzt auf den angemeldeten Nutzer.
 import json
 import uuid
 import asyncpg

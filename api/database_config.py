@@ -1,3 +1,4 @@
+# Zweck: Liest die Datenbank-URL aus Umgebung oder Geheimnisdatei und verhindert Mehrdeutigkeit.
 """Read database configuration without exposing credential values in errors."""
 
 import os

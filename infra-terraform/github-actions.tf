@@ -1,3 +1,4 @@
+# Zweck: Vergibt OIDC-Föderation und begrenzte Azure-/Kubernetes-Auslieferungsrechte an GitHub Actions.
 # Verified from GitHub's repository OIDC customization API (immutable subjects).
 # Only this trusted push branch is accepted; PR subjects and forks do not match.
 resource "azurerm_user_assigned_identity" "github_actions" {

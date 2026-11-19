@@ -1,3 +1,4 @@
+# Zweck: Prüft Auslieferungsgrenzen und sichere Fehlerbehandlung mit simulierten Cloud-Antworten.
 """Delivery security boundary and ARM-vs-command success checks, no cloud calls."""
 
 import json

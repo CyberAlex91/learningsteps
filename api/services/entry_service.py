@@ -1,3 +1,4 @@
+# Zweck: Verarbeitet Notizoperationen zwischen HTTP-Routen und Repository.
 from datetime import datetime, timezone
 from typing import List, Dict, Any
 import logging

@@ -1,4 +1,32 @@
+<!-- Zweck: Hält Scannerstände, Fehlalarme und akzeptierte beziehungsweise verworfene Image-Kandidaten fest. -->
 # LearningSteps Evolution – image security checks
+
+## Git history secret scan (2026-11-19)
+
+scripts/scan_git_history.py scanned 38 commits across all locally available refs
+using Gitleaks v8.30.1, pinned to image digest
+sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f.
+It rejects shallow clones and creates a temporary mirror of Git objects/refs;
+the application working tree and untracked local .env files are not mounted.
+Scanner networking is disabled; source mounts are read-only, with capabilities
+dropped and privilege escalation disabled. Reports redact matches fully.
+No remote fetch occurs locally: evidence does not cover unfetched remote refs,
+deleted/unreachable objects, external files, or guarantee detection of every key.
+
+Initial scan failed on two generic-api-key matches. Inspection of exact historical
+lines established both were the public Docker tag learningsteps-api:evolution-cc8174d.
+security/gitleaks-reviewed-fingerprints.txt records only these exact
+commit/file/rule/line fingerprints. No whole-rule/path suppression or baseline
+is used; inline gitleaks:allow comments are ignored. Rerun exit 0 with no remaining
+findings. Initial redacted report and final summary are retained outside Git:
+../artifacts/security/git-history-summary.json and timestamped JSON reports.
+
+CI source-security now uses fetch-depth:0 and scans all fetched refs with the
+same pinned image, redaction and exact reviewed fingerprints before delivery.
+The exact CI scanner command passed locally. Python/workflow syntax validated;
+the updated remote workflow still needs its first push/run for acceptance.
+
+The following dated sections record earlier image investigation stages.
 
 ## Traefik gateway accepted (2026-11-19)
 

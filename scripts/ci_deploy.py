@@ -1,3 +1,4 @@
+# Zweck: Liefert in vertrauenswürdigen GitHub-Läufen einen geprüften Image-Digest über AKS Run Command aus.
 """Trusted-push-only API image rollout via ARM; never print app config/secrets."""
 
 from datetime import datetime, timezone

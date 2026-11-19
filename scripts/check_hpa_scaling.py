@@ -1,3 +1,4 @@
+# Zweck: Erzeugt begrenzte HTTP-Last und prüft Hochskalierung sowie Rückkehr zu zwei API-Pods.
 """Bounded internal HTTP load: verify HPA expansion and return to two replicas."""
 
 from datetime import datetime, timezone

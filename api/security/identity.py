@@ -1,3 +1,4 @@
+# Zweck: Validiert Entra-Zugriffstokens und extrahiert eine vertrauenswürdige Nutzeridentität.
 """Validate delegated Entra access tokens for this API, never Foundry tokens.
 
 This module is not wired into the live journal routes yet. Test key providers

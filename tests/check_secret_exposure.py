@@ -1,3 +1,4 @@
+# Zweck: Prüft Quellmuster und lokale Logs auf Geheimnisse beziehungsweise bekannte Testnotizinhalte.
 """Report patterns/counts only; never print matched secrets or log contents."""
 
 import json

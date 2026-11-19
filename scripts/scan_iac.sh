@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Zweck: Prüft eine temporäre Kopie der Terraform-Quellen auf HIGH-/CRITICAL-Fehlkonfigurationen.
 # Assess tracked Terraform source locally; never mount state or local tfvars.
 set -euo pipefail
 project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)

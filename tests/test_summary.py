@@ -1,3 +1,4 @@
+# Zweck: Prüft Zusammenfassungslogik und sichere Begrenzung der Modellanfragen.
 """Offline model-boundary tests; the Azure and OpenAI transports are mocked."""
 
 import json

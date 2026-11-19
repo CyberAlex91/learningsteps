@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Zweck: Prüft das festgelegte Gateway-Image auf HIGH-/CRITICAL-Schwachstellen ohne Bereitstellung.
 # Local-only candidate assessment. Never uploads or deploys an image.
 set -euo pipefail
 project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)

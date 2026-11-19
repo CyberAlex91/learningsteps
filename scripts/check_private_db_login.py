@@ -1,3 +1,4 @@
+# Zweck: Prüft private Datenbankanmeldung über TLS mit einem temporären Diagnose-Pod.
 """Read-only AKS-to-PostgreSQL acceptance, with a memory-only vault password."""
 
 from datetime import datetime, timezone

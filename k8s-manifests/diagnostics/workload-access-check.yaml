@@ -1,3 +1,4 @@
+# Zweck: Definiert einen Diagnose-Pod für Workload Identity und den eingeschränkten CSI-Mount.
 apiVersion: v1
 kind: Pod
 metadata:

@@ -1,3 +1,4 @@
+# Zweck: Verwaltet Datenbankkennwörter und Verbindungsgeheimnis mit ephemeren beziehungsweise schreibenden Werten.
 # Ephemeral values do not persist in Terraform state or saved plans.
 ephemeral "random_password" "postgres" {
   for_each = toset(["admin", "app"])

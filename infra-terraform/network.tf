@@ -1,3 +1,4 @@
+# Zweck: Erstellt die Evolution-Ressourcengruppe sowie VNet und Subnetze.
 locals {
   evolution_tags = {
     project = "LearningSteps"

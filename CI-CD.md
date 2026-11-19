@@ -1,3 +1,4 @@
+<!-- Zweck: Beschreibt die GitHub-Prüfungen, OIDC-Auslieferung und deren tatsächliche Nachweise. -->
 # CI/CD status and implementation history
 
 ## Current verified status (2026-11-19)
@@ -22,7 +23,12 @@ or live deployment was performed by the helper. Never merge the proof branch.
 Evidence is saved outside the repository under ../artifacts/github/:
 security-gate-proof-request.json and security-gate-negative-log.txt.
 
-Remaining acceptance work includes full Git history secret scanning, main-branch
+Local full-available-history secret scan now passed: 38 commits, with two reviewed
+false positives restricted to exact historical Docker-tag fingerprints.
+source-security uses full checkout and the pinned Gitleaks history scan; its
+first remote run after this edit remains pending. See SECURITY-SCANS.md.
+
+Remaining acceptance work includes remote history-scan verification, main-branch
 migration, scaling/recovery evidence and automated HTTPS bootstrap recovery.
 The following sections record earlier implementation stages; their pending/not
 run statements describe those historical stages, not the current status above.

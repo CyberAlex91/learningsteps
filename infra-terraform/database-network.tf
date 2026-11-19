@@ -1,3 +1,4 @@
+# Zweck: Erstellt privates Datenbanknetz, DNS, Netzregeln und Peering zu AKS.
 # Germany West Central PostgreSQL provisioning is restricted for this subscription.
 # Keep AKS in place; use private cross-region networking to West Europe.
 resource "azurerm_resource_group" "data" {

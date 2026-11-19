@@ -1,3 +1,4 @@
+# Zweck: Prüft öffentliches HTTPS mit gültigem Zertifikat und geschützten Notizendpunkten.
 """Verify public HTTPS, redirect and anonymous rejection; no credentials used."""
 
 from datetime import datetime, timezone

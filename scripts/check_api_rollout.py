@@ -1,3 +1,4 @@
+# Zweck: Prüft API-Replikate, interne Erreichbarkeit, Authentifizierung und HPA-Messwerte lesend.
 """Read-only checks of each API replica and its internal Kubernetes service."""
 
 from datetime import datetime, timezone

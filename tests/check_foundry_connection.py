@@ -1,3 +1,4 @@
+# Zweck: Prüft ausdrücklich eine echte Foundry-Modellantwort ohne Tokenausgabe.
 """Explicit live SDK smoke test; synthetic RAM-only input, never stored notes."""
 
 import asyncio

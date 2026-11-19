@@ -1,3 +1,4 @@
+# Zweck: Bindet den API-ServiceAccount an eine Azure-Identität mit eng begrenztem Geheimniszugriff.
 # This is the API workload identity, separate from AKS control-plane and kubelet
 # identities. Only the named Kubernetes service account can federate with it.
 resource "azurerm_user_assigned_identity" "api" {

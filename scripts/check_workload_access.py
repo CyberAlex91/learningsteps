@@ -1,3 +1,4 @@
+# Zweck: Prüft CSI-Geheimniszugriff, App-Datenbankanmeldung und Ablehnung des Admin-Geheimnisses.
 """Configure API SA/CSI and verify workload access without host-side secrets.
 
 Run from LearningSteps in WSL. Retains the reusable ServiceAccount and

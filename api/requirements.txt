@@ -1,3 +1,4 @@
+# Zweck: Listet die direkt benötigten Python-Abhängigkeiten der API auf.
 fastapi
 uvicorn
 python-dotenv

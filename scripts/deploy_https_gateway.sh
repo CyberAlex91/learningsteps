@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Zweck: Prüft den Gateway-Image-Digest und liefert das HTTPS-Manifest nach AKS aus.
 # Deploy only the already scanned gateway digest and its explicit manifests.
 set -euo pipefail
 project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)

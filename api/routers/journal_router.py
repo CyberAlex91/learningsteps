@@ -1,3 +1,4 @@
+# Zweck: Stellt authentifizierte HTTP-Endpunkte zum Verwalten eigener Einträge bereit.
 from typing import AsyncGenerator
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, Depends

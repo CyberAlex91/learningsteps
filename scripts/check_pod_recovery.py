@@ -1,3 +1,4 @@
+# Zweck: Entfernt einen API-Pod und weist dessen automatische bereite Ersatzinstanz nach.
 """Remove one healthy API pod and verify controller replacement; no note writes."""
 
 from datetime import datetime, timezone

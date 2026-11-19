@@ -1,3 +1,4 @@
+# Zweck: Startet FastAPI und bindet Anmeldung, Notizrouten, KI und Probes ein.
 from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, RedirectResponse
 import asyncpg

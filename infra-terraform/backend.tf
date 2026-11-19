@@ -1,3 +1,4 @@
+# Zweck: Verbindet Terraform mit dem geschützten Azure-Blob-Remote-State.
 terraform {
   backend "azurerm" {
     subscription_id      = "0ad5f630-c506-401a-93fa-36b0fe313829"

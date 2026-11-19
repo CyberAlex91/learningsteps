@@ -1,3 +1,4 @@
+# Zweck: Erreichbar macht die API ausschließlich innerhalb des Clusters über einen Service.
 apiVersion: v1
 kind: Service
 metadata:

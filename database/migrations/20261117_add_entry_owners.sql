@@ -1,3 +1,4 @@
+-- Zweck: Ergänzt bestehende Einträge additiv um Nutzerzuordnung und passende Indizes.
 -- Additive migration: no note contents, identifiers or timestamps are changed.
 -- Existing ownerless records stay unassigned and invisible to user-scoped APIs.
 BEGIN;

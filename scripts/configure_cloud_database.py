@@ -1,3 +1,4 @@
+# Zweck: Richtet Cloud-Datenbankschema und eingeschränkte App-Rolle ohne Notizlöschung ein.
 """Initialize only the dedicated cloud DB; credentials stay in memory/stdin."""
 
 from datetime import datetime, timezone

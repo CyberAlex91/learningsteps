@@ -1,3 +1,4 @@
+# Zweck: Erstellt den Anwendungsnamespace mit eingeschränkten Pod-Sicherheitsregeln.
 apiVersion: v1
 kind: Namespace
 metadata:

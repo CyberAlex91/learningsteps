@@ -1,3 +1,4 @@
+# Zweck: Erzeugt serverseitig eine KI-Zusammenfassung eigener gespeicherter Notizen.
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends

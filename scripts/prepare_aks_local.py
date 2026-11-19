@@ -1,3 +1,4 @@
+# Zweck: Ermittelt einmalig lokale Entra-Nutzer-ID und öffentliche Entwickler-IP ohne Azure-Schreibzugriff.
 """Save local AKS user/IP inputs, without passwords or tokens; no Azure writes."""
 
 import ipaddress

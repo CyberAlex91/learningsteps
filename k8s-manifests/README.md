@@ -1,3 +1,4 @@
+<!-- Zweck: Erklärt Kubernetes-Ressourcen sowie Betriebs- und Abnahmeprüfungen. -->
 # LearningSteps Kubernetes configuration
 
 ## Application rollout prepared (not yet applied)

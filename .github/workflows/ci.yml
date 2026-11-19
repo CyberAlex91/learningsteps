@@ -1,3 +1,4 @@
+# Zweck: Prüft Quellen, Tests, Historie und Image und liefert nur geprüfte Images über OIDC aus.
 name: LearningSteps CI and delivery
 
 on:
@@ -65,6 +66,19 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Secret scan (complete fetched Git history)
+        run: |
+          test "$(git rev-parse --is-shallow-repository)" = false
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges=true \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=/repo -v "$PWD/.git:/repo:ro" \
+            -v "$PWD/security/gitleaks-reviewed-fingerprints.txt:/reviewed-fingerprints:ro" \
+            ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            git /repo --log-opts=--all --redact=100 --no-banner --log-level error \
+            --ignore-gitleaks-allow --gitleaks-ignore-path /reviewed-fingerprints \
+            --timeout 300 --exit-code 1
       - name: Secret scan (working tree)
         run: |
           docker run --rm -v "$PWD:/src:ro" "$TRIVY_IMAGE" fs \

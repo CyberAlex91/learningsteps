@@ -1,3 +1,4 @@
+# Zweck: Führt CI-Tests ausschließlich gegen die vorgesehene isolierte Testdatenbank aus.
 """CI-only test orchestration; refuses any non-disposable database target."""
 
 import asyncio

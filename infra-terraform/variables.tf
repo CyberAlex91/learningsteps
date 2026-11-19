@@ -1,3 +1,4 @@
+# Zweck: Definiert die Eingaben für AKS-Verwaltung und erlaubten Entwicklerzugang.
 variable "aks_admin_object_id" {
   description = "Stable Entra object ID of the human cluster administrator, not the CI identity."
   type        = string

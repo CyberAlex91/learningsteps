@@ -14,10 +14,15 @@ do not delete/overwrite it during subsequent tests. This proves authenticated
 create/read through gateway, API and private DB. Cloud PATCH/DELETE and cloud AI
 are not yet evidenced. Own-note isolation tests were performed separately earlier.
 
-GitHub Actions checks now exist: commit b1e4f17, run44515789181, all three jobs
-passed including lint/tests/build and secret/image/IaC gates. Next milestone:
-OIDC-authorized push/deploy. Public HTTPS success
-does not establish continuous delivery, scaling or full recovery acceptance.
+GitHub Actions full checks and OIDC delivery passed for ordinary push 126d216
+(run44523116149) and 8f65854 (run44525523291). Isolated negative security run
+44525079246 rejected the deliberately open SSH rule with two CRITICAL findings;
+delivery skipped, with the proof branch independently excluded from delivery.
+Single-pod replacement passed in 17.9 seconds. Bounded internal HTTP load then
+demonstrated 2 -> 4 -> 2 Ready API pods, with 168488 recorded HTTP 200 responses
+and zero reported request errors. Evidence: pod-recovery-check.json and
+hpa-scaling-check.json under ../artifacts/azure. These are component acceptance
+tests; full infrastructure rebuild and persisted-data recovery remain pending.
 
 ## Done and evidenced
 
@@ -69,7 +74,8 @@ then secure credential provisioning and database Terraform configuration.
 - [x] AKS cluster created by Terraform; subsequent plan No changes.
 - [x] Developer Entra/Azure CLI access verified; two Kubernetes 1.36.5 nodes Ready,
   Azure Linux 3.0, private IPs only. Separate WSL kubeconfig used.
-- [ ] Configure restricted CI access.
+- [x] Configure restricted CI access: exact GitHub OIDC branch federation,
+  ACR push and AKS Run Command; deployment data actions only in learningsteps.
 - [x] PostgreSQL Flexible Server and private DNS created, seven-day backup configured.
 - [x] Verify private DB connection/TLS, initialize schema and restricted SQL app role;
   preserve existing local notes.
@@ -81,12 +87,12 @@ then secure credential provisioning and database Terraform configuration.
   mount, app-role SELECT over verified TLSv1.3 and explicit ForbiddenByRbac for
   admin secret passed on 2026-11-19. Evidence workload-access-check.json; pod
   removed. Non-root file access uses 0444 after 0440 group mismatch was diagnosed.
-  Reusable SA/SPC retained. The API deployment still needs to consume this mount.
+  Reusable SA/SPC retained; deployed API consumes this CSI mount successfully.
 - [x] Key Vault created with firewall/RBAC and two separate password secrets;
   credential apply: 2 added, 0 changed, 0 destroyed; subsequent plan No changes.
   Password values use ephemeral generation and write-only storage arguments.
   The restricted SQL role now exists and its login was verified. Runtime pod
-  access through Workload Identity remains pending.
+  access through Workload Identity is verified for the database URL secret.
 - [x] Kubernetes API Deployment, internal Service and ConfigMap rolled out;
   user confirmed two 1/1 Running pods, no restarts. Runtime image digest matches
   tested and scanned image bca3adb76034cf55982987c43988247a93f58e03303b208d4c9b636f9ce10d7f.
@@ -95,29 +101,34 @@ then secure credential provisioning and database Terraform configuration.
   Ready, 4Gi certificate PVC Bound, public IP131.189.29.152. User confirmed public
   CA/hostname verification, docs/readiness200, entries401 and HTTP redirect.
   Evidence https-access-check.json. Entra HTTPS callback and interactive login
-  still pending. First-start certificate race must be automated for recovery.
+  passed. First-start certificate race must be automated for recovery.
 - [x] Readiness/liveness probes and resource requests/limits deployed.
   Runtime code now supports DATABASE_URL_FILE and /health/live, /health/ready.
   User ran all nine offline runtime configuration/probe tests: OK (2026-11-19).
   Production-image build, smoke test, scan, ACR push and deployment passed.
-- [ ] Horizontal Pod Autoscaler, load demonstration and replica recovery.
+- [x] Horizontal Pod Autoscaler: synthetic HTTP load demonstrated 2 -> 4 -> 2
+  Ready replicas; temporary load Job removed. No HPA threshold changes.
+- [x] Single API pod replacement verified in 17.9 seconds; another original pod
+  remained Ready at completion. Continuous availability was not measured.
 - [x] GitHub Actions on pushes: lint, tests and Docker build.
 - [x] Checkout secret scan, image vulnerability scan, Terraform static security analysis.
   Full history secret scan is still pending.
-- [ ] HIGH/CRITICAL findings fail pipeline; intentional negative test proves this.
+- [x] HIGH/CRITICAL findings fail the scanner: intentional isolated negative test
+  produced AZU-0047 and AZU-0050 (CRITICAL), exit 1. Delivery was skipped;
+  proof branch also excluded independently by trusted-branch condition.
 - [x] Federated GitHub OIDC identity/permissions created by Terraform;
-  subsequent plan No changes. Workflow authentication itself still unproven.
-  Delivery code prepared: separate all-gates-dependent job, exact scanned-image
+  subsequent plan No changes. Actual workflow OIDC authentication passed.
+  Delivery uses a separate all-gates-dependent job, exact scanned-image
   artifact transfer, pinned Actions and digest rollout through cluster-scoped
   Run Command. Five mocked delivery-boundary tests passed locally; workflow YAML
-  and needs dependencies validated. First real delivery run remains pending.
+  and needs dependencies validated. Real delivery runs passed.
 - [x] Successful scans followed by OIDC ACR push and AKS deployment.
 - [x] Pushed code change reached the public API through delivery workflow:
   run44519207174 attempt2 succeeded after namespace authorization repair.
   Deployed digest539cd1a7e4e7183c52458c6d08a79f5aa3d13fbf79253ed0cde23b19fa416879;
   independent HTTPS OpenAPI read confirmed new Authorize/Entra description.
   Evidence ../artifacts/github/run-44519207174/deployment-evidence.json.
-  Next ordinary push should verify first-attempt full workflow after the repair.
+  Ordinary pushes 126d216 and 8f65854 subsequently passed the full workflow.
 - [ ] Preserve evidence, then final Terraform destroy/apply recovery test.
 - [ ] Technical report, screenshots, runnable instructions and course submission.
 

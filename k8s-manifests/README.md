@@ -100,6 +100,40 @@ only allowlisted metadata under ../artifacts/azure and deletes only its own pod.
 No Azure credentials are supplied to the pod. This is a developer diagnostic,
 not the final application Workload Identity/Key Vault integration.
 
+## Recovery and autoscaling acceptance (2026-11-19)
+
+Run these helpers from the project parent in WSL with the dedicated AKS context.
+Do not overlap them with a CI rollout or another load test.
+
+`python3 app/scripts/check_pod_recovery.py` removes exactly one Ready API pod
+after requiring a stable deployment with at least two healthy replicas. It
+accepts a new Ready pod UID while the other original pods remain Ready.
+Actual run: replacement verified after 17.9 seconds; evidence is saved in
+`../artifacts/azure/pod-recovery-check.json`. This does not measure continuous
+availability or independently prove persisted note contents.
+
+`python3 app/scripts/check_hpa_scaling.py` creates two temporary restricted Job
+pods using the currently deployed immutable API image. They receive no secrets,
+Workload Identity labels, mounted configuration or service-account token.
+Twenty-four HTTP workers per pod call only `GET /health/live` internally for
+at most 300 seconds (Job deadline 330 seconds). Each load pod is limited to
+500m CPU and 128Mi memory. The API HPA stays at its configured 2..4 replicas.
+The helper samples actual CPU/replicas, requires at least three Ready API pods,
+removes the Job, then waits for two Ready replicas again. Cleanup is attempted
+in a finally block; a finished Job also has a ten-minute cleanup TTL.
+Evidence, including incomplete attempts, is written to
+`../artifacts/azure/hpa-scaling-check.json`. If local cluster access fails,
+the server-side Job deadline still limits load duration. Inspect remaining
+Jobs with `kubectl get jobs -n learningsteps` before retrying.
+
+This is a synthetic HTTP/CPU autoscaling check, not a database, AI, or application
+throughput benchmark. It does not create nodes or change HPA thresholds.
+Actual acceptance passed on 2026-11-19: 2 -> 4 -> 2 Ready API replicas.
+The two generators recorded 83999 and 84489 HTTP 200 responses respectively,
+with zero reported request errors. The CPU samples peaked at 500% of the
+requested CPU, not 500% of a node. Metrics lag and the configured scale-down
+stabilization delayed the return to two replicas after load removal.
+
 ## Original network test procedure
 
 Apply namespace.yaml and diagnostics/db-network-check.yaml explicitly; do not

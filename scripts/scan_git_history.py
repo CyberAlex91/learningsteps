@@ -59,7 +59,10 @@ def main():
         "checked_at": datetime.now(timezone.utc).isoformat(), "image": IMAGE,
         "commits_available": commits, "scope": "all local refs; no remote fetch performed",
         "scanner_exit_code": result.returncode, "finding_count": len(findings),
-        "reviewed_false_positive_fingerprints": 2,
+        "reviewed_false_positive_fingerprints": sum(
+            bool(line.strip()) and not line.lstrip().startswith("#")
+            for line in (APP / "security/gitleaks-reviewed-fingerprints.txt").read_text().splitlines()
+        ),
         "redacted_report": report.name,
         "findings": [{"rule": f.get("RuleID"), "file": f.get("File"),
                       "commit": f.get("Commit"), "line": f.get("StartLine")}

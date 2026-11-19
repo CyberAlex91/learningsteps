@@ -14,7 +14,7 @@ No remote fetch occurs locally: evidence does not cover unfetched remote refs,
 deleted/unreachable objects, external files, or guarantee detection of every key.
 
 Initial scan failed on two generic-api-key matches. Inspection of exact historical
-lines established both were the public Docker tag learningsteps-api:evolution-cc8174d.
+lines established both were the public Docker image's tag `evolution-cc8174d`.
 security/gitleaks-reviewed-fingerprints.txt records only these exact
 commit/file/rule/line fingerprints. No whole-rule/path suppression or baseline
 is used; inline gitleaks:allow comments are ignored. Rerun exit 0 with no remaining
@@ -24,7 +24,11 @@ findings. Initial redacted report and final summary are retained outside Git:
 CI source-security now uses fetch-depth:0 and scans all fetched refs with the
 same pinned image, redaction and exact reviewed fingerprints before delivery.
 The exact CI scanner command passed locally. Python/workflow syntax validated;
-the updated remote workflow still needs its first push/run for acceptance.
+First remote run44533492995 failed because the new review documentation repeated
+the same public image reference. That exact historical finding in commit61758ee
+was reviewed as the third false-positive fingerprint. Current text separates the
+image name from its tag to avoid another identical finding. No detection rule
+was disabled. The corrected remote workflow still needs a successful rerun.
 
 The following dated sections record earlier image investigation stages.
 

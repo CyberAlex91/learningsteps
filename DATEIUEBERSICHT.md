@@ -95,7 +95,7 @@ JSON-Dateien erlauben keine Kommentare. Erzeugte Sperrdateien, private Eingaben,
 | [scripts/scan_gateway.sh](scripts/scan_gateway.sh) | Prüft das festgelegte Gateway-Image auf HIGH-/CRITICAL-Schwachstellen ohne Bereitstellung. |
 | [scripts/scan_git_history.py](scripts/scan_git_history.py) | Prüft alle lokal verfügbaren Git-Verweise auf Geheimnisse, ohne lokale Arbeitsgeheimnisse einzubinden. |
 | [scripts/scan_iac.sh](scripts/scan_iac.sh) | Prüft eine temporäre Kopie der Terraform-Quellen auf HIGH-/CRITICAL-Fehlkonfigurationen. |
-| [security/gitleaks-reviewed-fingerprints.txt](security/gitleaks-reviewed-fingerprints.txt) | Erlaubt nur zwei einzeln geprüfte historische Docker-Tag-Fehlalarme im Geheimnisscan. |
+| [security/gitleaks-reviewed-fingerprints.txt](security/gitleaks-reviewed-fingerprints.txt) | Erlaubt ausschließlich einzeln geprüfte historische Docker-Tag-Fehlalarme. |
 | [start.sh](start.sh) | Startet FastAPI für die lokale Entwicklung mit der vorhandenen Python-Umgebung. |
 | [tests/README.md](tests/README.md) | Erklärt die aktuellen Tests und ihre Voraussetzungen sowie Aussagegrenzen. |
 | [tests/check_container_smoke.py](tests/check_container_smoke.py) | Prüft gehärteten Containerstart und Ablehnung anonymer geschützter API-Anfragen. |

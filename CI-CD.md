@@ -1,4 +1,31 @@
-# CI/CD preparation
+# CI/CD status and implementation history
+
+## Current verified status (2026-11-19)
+
+Normal push 126d216 completed the full workflow successfully, including all
+checks, OIDC authentication, image publication and AKS delivery:
+https://github.com/CyberAlex91/learningsteps/actions/runs/44523116149
+
+Isolated negative test 69e92ad on proof/security-gate-20261119-123401-b7dfcf:
+https://github.com/CyberAlex91/learningsteps/actions/runs/44525079246
+Terraform static analysis failed with exit code 1 on two CRITICAL findings:
+AZU-0047 (unrestricted ingress) and AZU-0050 (unrestricted SSH ingress).
+Lint/database isolation, source secret scan and image checks succeeded.
+Delivery was skipped. The proof branch is independently excluded from delivery;
+this run proves scanner failure on unsafe input, rather than isolating the
+needs dependency as the sole reason delivery was skipped. The workflow also
+requires all three check jobs to succeed before trusted-branch delivery.
+
+scripts/prove_security_gate.py created only a remote proof commit using a
+separate temporary Git index. No checkout switch, Terraform apply, Azure command
+or live deployment was performed by the helper. Never merge the proof branch.
+Evidence is saved outside the repository under ../artifacts/github/:
+security-gate-proof-request.json and security-gate-negative-log.txt.
+
+Remaining acceptance work includes full Git history secret scanning, main-branch
+migration, scaling/recovery evidence and automated HTTPS bootstrap recovery.
+The following sections record earlier implementation stages; their pending/not
+run statements describe those historical stages, not the current status above.
 
 ## Delivery succeeded after namespace repair (2026-11-19)
 

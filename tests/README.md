@@ -35,3 +35,18 @@ Coverage: all six CRUD routes, missing and malformed IDs, partial updates,
 concurrent changes to different fields, rejected invalid payloads, timestamps,
 API-process restart, startup/shutdown logging and journal-body exclusion from
 the checked log. This does not establish Azure security or production readiness.
+# AKS runtime configuration and health checks
+
+tests/test_runtime.py checks env/file configuration, rejection of ambiguous
+sources, safe file-read errors, DB-independent liveness, readiness success on an
+empty table and safe 503 failures including missing schema/connection cleanup.
+Run offline in the existing image with updated api/ mounted read-only and a
+writable temporary /tmp. These tests do not contact Azure or a database.
+
+DATABASE_URL_FILE points to the CSI-mounted database-url. DATABASE_URL remains
+available for local development; setting both is rejected. Configuration is read
+at process startup: after credential rotation, roll out/restart API pods to use
+the updated file. CSI file rotation alone does not reload the running API.
+/health/live and /health/ready are public minimal-status endpoints; readiness
+checks DB table read access with a bounded connection/query. Liveness does not
+depend on DB or Foundry. No model calls are made by health probes.

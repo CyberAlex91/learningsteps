@@ -1,5 +1,36 @@
 # LearningSteps Evolution – Terraform
 
+## Public HTTPS address created (2026-11-19)
+
+User applied the reviewed plan; IP exists and subsequent plan No changes.
+Confirmed output: learningsteps-alex-0ad5f630.germanywestcentral.cloudapp.azure.com.
+Gateway/certificate still pending. Public IP incurs charges while retained.
+
+public-access.tf defines one static Standard zone-redundant IP and Azure DNS
+label in the existing AKS node resource group. AKS already manages networking
+there; no additional role grant or resource-group ownership is introduced.
+Expected plan: one addition, no changes/deletions. Public IP is billable while
+it exists, including when AKS is stopped. No HTTPS service/certificate is created
+by this Terraform file. A later gateway LoadBalancer must reference this IP by
+name and node resource group. Remove the Kubernetes LoadBalancer service before
+final infrastructure destruction; retain the remote-state bootstrap.
+
+## Dynamic developer IP preparation
+
+From LearningSteps in the VS Code WSL terminal, run
+`python3 app/scripts/refresh_developer_access.py` for a read-only IP comparison.
+With `--prepare`, it verifies the active subscription/tenant, detects and
+validates a public IPv4, adds only that /32 to the vault firewall to permit
+Terraform refresh, preserves other local tfvars and saves developer-ip.tfplan.
+Review the full plan before applying; expected changes are only AKS/KV IP rules.
+This is an on-demand update, not a background service or static ISP address.
+The helper never applies, starts services or reads secret values. If planning
+fails after the bootstrap, the added /32 remains until a successful reviewed
+apply; no rollback/removal of other rules is attempted. A network/VPN change
+may require another run. Keep the same network during prepare/apply.
+After apply, check Terraform No changes and kubectl access. No extra Azure
+resources are created by this helper.
+
 ## Status 2026-11-17
 
 Backend initialization and validation succeeded according to user CLI output.

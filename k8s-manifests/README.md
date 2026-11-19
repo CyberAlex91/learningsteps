@@ -1,5 +1,50 @@
 # LearningSteps Kubernetes configuration
 
+## Application rollout prepared (not yet applied)
+
+configmap.yaml holds public identifiers and the credential-file path only.
+deployment.yaml uses the tested runtime image digest, two initial replicas,
+Workload Identity/CSI, non-root/read-only restrictions and bounded probes.
+service.yaml is the internal backend; the required public LoadBalancer belongs
+to a separate HTTPS gateway still to be configured. HPA targets 60% CPU of the
+100m request, two to four replicas. Metrics availability and scaling are not yet
+verified. Do not describe autoscaling or a public application as complete.
+
+Upload the unchanged tested image first and compare registry digest with the
+deployment. Apply these four application files explicitly after reviewing them;
+never recursively apply diagnostics or the unrendered workload-access template.
+Public auth ConfigMap file uses subPath and configuration is read at startup:
+restart rollout after config changes. Initial replicas is a bootstrap setting;
+later CI image updates should preserve the HPA-managed replica count.
+
+## Runtime identity acceptance (passed 2026-11-19)
+
+User confirmed CSI mount, restricted SQL app login/read-only query with TLSv1.3
+and explicit denial of the admin secret by Key Vault RBAC. Evidence saved as
+../artifacts/azure/workload-access-check.json; diagnostic pod removed. Initial
+file permission issue was fixed as described below.
+
+Run `python3 app/scripts/check_workload_access.py` from LearningSteps in WSL.
+It checks context/subscription, reads only the public managed identity client ID,
+renders workload-access.json and applies the reusable ServiceAccount and
+SecretProviderClass. Do not apply that template without rendering its placeholder.
+JSON is a supported Kubernetes manifest format. No secretObjects sync is used.
+The CSI file uses 0444: read-only for the non-root process in the explicitly
+mounted pod volume. An initial 0440 test failed with PermissionError: the mounted
+file's group did not grant the application access despite pod fsGroup. This
+does not grant other pods a mount or any Azure rights. Do not add untrusted
+sidecars to a pod that has this credential mount.
+
+The diagnostic pod uses the API service account, workload identity webhook and
+read-only CSI mount. It connects using the mounted URL (verify-full), checks
+app login, TLS and entry count with read-only SQL, then obtains a workload token
+and requires an explicit ForbiddenByRbac response when requesting the admin
+secret. A generic network 403 is not accepted as proof of access isolation.
+No credential values or tokens are printed/saved; no host Azure login is mounted.
+Metadata evidence is saved outside Git, diagnostic pod removed, SA/SPC retained
+for the eventual deployment. Failure stops the run; do not broaden permissions.
+This does not deploy the API or implement DATABASE_URL_FILE in the application.
+
 ## Private network acceptance passed
 
 User applied the namespace and network diagnostic. Pod reached Succeeded and

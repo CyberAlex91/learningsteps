@@ -1,5 +1,58 @@
 # LearningSteps Evolution – image security checks
 
+## Traefik gateway accepted (2026-11-19)
+
+First ACR upload succeeded but only transferred available Linux/AMD64 content.
+ACR digest: sha256:665efb2d37f2458cc2e0bdde996df05387ab4046bde946dff3654c1077d7efe1.
+The original digest below identifies the multi-platform index. Initial script
+incorrectly required equality and stopped before any Kubernetes apply. Corrected
+script checks the expected AMD64 manifest in the immutable publisher index,
+then compares ACR against that platform digest. Kubernetes pins the platform
+digest. Publisher index evidence is saved outside Git; membership verification
+will run on the next user invocation. No scan bypass or new build is involved.
+
+User confirmed traefik:v2.11.61 version and Trivy exit 0: zero HIGH/CRITICAL
+for Alpine 3.24.4 and the Go binary. Digest
+sha256:262ccbae7ee89fbc17b2ec1c2c4718b48d4b4a7a38c8c26a8593b074fdbc7844.
+Report ../artifacts/security/traefik-gateway-trivy.txt. No suppressions.
+Gateway manifest references this exact digest in the project ACR; upload and
+deployment remain pending. This is selected-severity evidence, not a claim
+that the image has no vulnerabilities of any severity.
+
+## Caddy gateway blocked (2026-11-19)
+
+Official caddy:2.11.9-alpine at
+sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
+failed the HIGH/CRITICAL gate: CVE-2026-116587 (go-jose/v3 v3.0.5, no fixed
+v3 release) and CVE-2026-78661 (x/net v0.60.0, fixed v0.62.0). Alpine packages
+had zero findings at selected severity. No upload/deployment of Caddy.
+Do not bypass with ignore-unfixed, VEX assertions or blanket scan exclusions.
+
+Investigated alternative: stable Traefik v3.7.15 still declares affected versions
+(go-jose/v4 v4.1.5 and x/net v0.60.0), so do not waste a candidate scan on it.
+Released Traefik v2.11.61 source go.mod declares go-jose/v4 v4.1.6 and x/net
+v0.62.0, matching the two known fixes. scripts/scan_gateway.sh tests this
+candidate; scan success is not yet confirmed and other findings remain possible.
+This is the existing security-backport line, not a claim that v2 is the newest
+major version. Reassess maintained v3 releases before long-term production use.
+An own Caddy build would require migration of Smallstep crypto APIs; avoid this
+additional maintenance task for the capstone if a released gateway passes.
+
+Primary references:
+- https://github.com/go-jose/go-jose/security/advisories/GHSA-mgcc-cww5-fp2q
+- https://github.com/traefik/traefik/blob/v2.11.61/go.mod
+- https://github.com/traefik/traefik/blob/v3.7.15/go.mod
+
+## Runtime image passed (2026-11-19)
+
+User confirmed build, hardened container smoke test (including liveness 200,
+readiness 503 with deliberately unavailable DB and anonymous routes 401) and
+Trivy HIGH/CRITICAL gate passed. Tag learningsteps-api:evolution-runtime;
+manifest list sha256:bca3adb76034cf55982987c43988247a93f58e03303b208d4c9b636f9ce10d7f.
+Report: ../artifacts/security/learningsteps-runtime-trivy.txt. Includes secret-file
+configuration and probe endpoints; nine offline runtime tests passed beforehand.
+Upload and API deployment not yet confirmed. Earlier evidence below is historical.
+
 ## Current acceptance: Alpine application image passed (2026-11-18)
 
 The user's completed Trivy report at 12:35 UTC reports zero HIGH/CRITICAL

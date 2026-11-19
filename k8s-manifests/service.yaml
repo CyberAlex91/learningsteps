@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: learningsteps-api
+  namespace: learningsteps
+spec:
+  # Internal API backend. A separate HTTPS gateway will use the required
+  # LoadBalancer service; avoid sending user tokens over public plaintext HTTP.
+  type: ClusterIP
+  selector:
+    app: learningsteps-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

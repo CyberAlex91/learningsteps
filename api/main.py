@@ -4,6 +4,7 @@ import asyncpg
 from dotenv import load_dotenv
 from routers.journal_router import router as journal_router
 from routers.summary_router import router as summary_router
+from routers.health_router import router as health_router
 from security.dependencies import auth_settings, current_user
 from security.identity import Principal
 import logging
@@ -38,6 +39,7 @@ app = FastAPI(
 )
 app.include_router(journal_router)
 app.include_router(summary_router)
+app.include_router(health_router)
 
 
 @app.exception_handler(asyncpg.PostgresError)

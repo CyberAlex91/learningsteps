@@ -59,6 +59,8 @@ def main():
         print("PASS: non-root API startup, OpenAPI and summary route")
         for path, method, expected in (
             ("/docs", "GET", 200),
+            ("/health/live", "GET", 200),
+            ("/health/ready", "GET", 503),
             ("/me", "GET", 401),
             ("/entries", "GET", 401),
             ("/me/notes/summary", "POST", 401),

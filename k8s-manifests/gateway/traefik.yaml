@@ -1,0 +1,192 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: learningsteps-certificates
+provisioner: disk.csi.azure.com
+parameters:
+  skuName: StandardSSD_LRS
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: learningsteps-https-data
+  namespace: learningsteps
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: learningsteps-certificates
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learningsteps-https-config
+  namespace: learningsteps
+data:
+  traefik.yaml: |
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
+    log:
+      level: WARN
+    entryPoints:
+      web:
+        address: ":8080"
+        http:
+          redirections:
+            entryPoint:
+              to: ":443"
+              scheme: https
+              permanent: true
+      websecure:
+        address: ":8443"
+      health:
+        address: ":8082"
+    ping:
+      entryPoint: health
+    providers:
+      file:
+        filename: /etc/traefik/dynamic.yaml
+        watch: true
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          storage: /data/acme.json
+          httpChallenge:
+            entryPoint: web
+  dynamic.yaml: |
+    http:
+      routers:
+        learningsteps-public:
+          rule: "Host(`learningsteps-alex-0ad5f630.germanywestcentral.cloudapp.azure.com`)"
+          entryPoints: [websecure]
+          service: learningsteps
+          tls:
+            certResolver: letsencrypt
+      services:
+        learningsteps:
+          loadBalancer:
+            servers:
+              - url: http://learningsteps-api.learningsteps.svc.cluster.local:80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learningsteps-https
+  namespace: learningsteps
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 600
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: learningsteps-https
+  template:
+    metadata:
+      labels:
+        app: learningsteps-https
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gateway
+          image: acrlearningstepsalex0ad5f630.azurecr.io/learningsteps-gateway@sha256:665efb2d37f2458cc2e0bdde996df05387ab4046bde946dff3654c1077d7efe1
+          # fsGroup volume handling may add group bits when the disk is remounted.
+          # Traefik requires its ACME private-key store to be owner-only (0600).
+          # The non-root UID owns the file it created; no root init is needed.
+          command: [/bin/sh, -ec]
+          args:
+            - |
+              umask 077
+              if [ -f /data/acme.json ]; then
+                chmod 600 /data/acme.json
+              fi
+              exec traefik --configFile=/etc/traefik/traefik.yaml
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+            - name: health
+              containerPort: 8082
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 192Mi
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: health
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: health
+            periodSeconds: 15
+            timeoutSeconds: 2
+          volumeMounts:
+            - name: config
+              mountPath: /etc/traefik
+              readOnly: true
+            - name: certificates
+              mountPath: /data
+            - name: temporary
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: learningsteps-https-config
+        - name: certificates
+          persistentVolumeClaim:
+            claimName: learningsteps-https-data
+        - name: temporary
+          emptyDir:
+            sizeLimit: 16Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: learningsteps-https
+  namespace: learningsteps
+  annotations:
+    service.beta.kubernetes.io/azure-pip-name: pip-learningsteps-https
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: rg-learningsteps-evolution-nodes
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  selector:
+    app: learningsteps-https
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https

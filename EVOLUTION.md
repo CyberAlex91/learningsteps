@@ -1,7 +1,22 @@
 # LearningSteps Evolution – acceptance checklist
 
-Status: 2026-11-18. Approximate progress 60%; implementation estimates are not
+Status: 2026-11-19. Approximate progress 75%; implementation estimates are not
 a course grade. The daily AI exercise is submitted according to the user.
+
+## Authenticated public acceptance (2026-11-19)
+
+HTTPS Swagger SPA callback added to LearningSteps-Alex-Swagger, with existing
+localhost callback preserved. User completed browser authorization and created
+then listed a real own cloud note through the public HTTPS API. Entry ID:
+199c9471-746e-4c13-90f4-1f9dec1ac1c0, created at2026-11-19T11:18:02.814455+00:00.
+GET entries returned that note and count1. Preserve it as acceptance evidence;
+do not delete/overwrite it during subsequent tests. This proves authenticated
+create/read through gateway, API and private DB. Cloud PATCH/DELETE and cloud AI
+are not yet evidenced. Own-note isolation tests were performed separately earlier.
+
+No GitHub Actions workflow exists yet. Next milestone: lint/tests/build,
+secret/image/IaC gates, then OIDC-authorized push/deploy. Public HTTPS success
+does not establish continuous delivery, scaling or full recovery acceptance.
 
 ## Done and evidenced
 
@@ -58,18 +73,32 @@ then secure credential provisioning and database Terraform configuration.
 - [x] Verify private DB connection/TLS, initialize schema and restricted SQL app role;
   preserve existing local notes.
 - [ ] Demonstrate cloud database backup/restore.
-- [ ] Key Vault integration into Kubernetes pods with narrow identity permissions.
+- [x] Key Vault integration into Kubernetes diagnostic pod with narrow identity permissions.
   Preparation applied: API user-assigned identity, exact service-account
   federation, write-only database URL secret and secret-scoped read role.
-  Apply 4 added, 0 changed, 0 destroyed; subsequent plan No changes. CSI mount
-  and actual workload access/denied-admin-secret tests are still pending.
+  Apply 4 added, 0 changed, 0 destroyed; subsequent plan No changes. Actual CSI
+  mount, app-role SELECT over verified TLSv1.3 and explicit ForbiddenByRbac for
+  admin secret passed on 2026-11-19. Evidence workload-access-check.json; pod
+  removed. Non-root file access uses 0444 after 0440 group mismatch was diagnosed.
+  Reusable SA/SPC retained. The API deployment still needs to consume this mount.
 - [x] Key Vault created with firewall/RBAC and two separate password secrets;
   credential apply: 2 added, 0 changed, 0 destroyed; subsequent plan No changes.
   Password values use ephemeral generation and write-only storage arguments.
   The restricted SQL role now exists and its login was verified. Runtime pod
   access through Workload Identity remains pending.
-- [ ] Kubernetes Deployment, LoadBalancer Service and ConfigMap.
-- [ ] Readiness/liveness probes and resource requests/limits.
+- [x] Kubernetes API Deployment, internal Service and ConfigMap rolled out;
+  user confirmed two 1/1 Running pods, no restarts. Runtime image digest matches
+  tested and scanned image bca3adb76034cf55982987c43988247a93f58e03303b208d4c9b636f9ce10d7f.
+- [x] Public HTTPS gateway with required LoadBalancer Service.
+  Traefik scan passed, AMD64 digest verified in publisher index and ACR. Gateway
+  Ready, 4Gi certificate PVC Bound, public IP131.189.29.152. User confirmed public
+  CA/hostname verification, docs/readiness200, entries401 and HTTP redirect.
+  Evidence https-access-check.json. Entra HTTPS callback and interactive login
+  still pending. First-start certificate race must be automated for recovery.
+- [x] Readiness/liveness probes and resource requests/limits deployed.
+  Runtime code now supports DATABASE_URL_FILE and /health/live, /health/ready.
+  User ran all nine offline runtime configuration/probe tests: OK (2026-11-19).
+  Production-image build, smoke test, scan, ACR push and deployment passed.
 - [ ] Horizontal Pod Autoscaler, load demonstration and replica recovery.
 - [ ] GitHub Actions on pushes: lint, tests and Docker build.
 - [ ] Secret scan, image vulnerability scan, Terraform static security analysis.

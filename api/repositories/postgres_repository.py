@@ -1,18 +1,13 @@
 import json
-import os
 import uuid
 import asyncpg
 from datetime import datetime, timezone
 from typing import Any, Dict, List
-from dotenv import load_dotenv
+from database_config import get_database_url
 from repositories.interface_repository import DatabaseInterface
 from security.identity import Principal
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is missing")
+DATABASE_URL = get_database_url()
 
 class PostgresDB(DatabaseInterface):
     def __init__(self, owner: Principal):

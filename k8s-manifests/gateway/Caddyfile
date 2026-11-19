@@ -1,0 +1,16 @@
+{
+    admin off
+    http_port 8080
+    https_port 8443
+    servers {
+        protocols h1 h2
+    }
+}
+
+learningsteps-alex-0ad5f630.germanywestcentral.cloudapp.azure.com {
+    reverse_proxy learningsteps-api.learningsteps.svc.cluster.local:80
+}
+
+http://:8081 {
+    respond /healthz "ok" 200
+}

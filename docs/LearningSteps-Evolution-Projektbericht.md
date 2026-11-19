@@ -234,7 +234,7 @@ Der gespeicherte Destroy-Plan wurde auf genau 45 Anwendungsressourcen in den Lea
 
 Der unterbrochene Apply hinterließ zwei bereits erstellte Ressourcen außerhalb des gespeicherten State. Nach Prüfung, dass kein Terraform-Prozess mehr lief, wurde die verwaiste Sperre aufgehoben und der Bestand importiert. Der Geheimnisimport liest vorübergehend einen Wert in den privaten State. Deshalb wurde die App-Kennwortversion vor dem Einrichten der SQL-Rolle erneuert und die Ressource wieder auf Write-only umgestellt. Historische State-Versionen bleiben private sensible Betriebsdaten; der alte importierte Wert wird nicht als SQL-Zugang verwendet.
 
-Aktueller Abschlussstatus des Wiederaufbaus: 45 Ressourcen vollstÃ¤ndig abgebaut und wiederhergestellt; eine Notiz mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschrÃ¤nkter Datenbankzugriff und echte KI per Workload Identity erneut geprÃ¼ft. Terraform: keine Ã„nderungen.
+Aktueller Abschlussstatus des Wiederaufbaus: 45 Ressourcen vollständig abgebaut und wiederhergestellt; eine Notiz mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschränkter Datenbankzugriff und echte KI per Workload Identity erneut geprüft. Terraform: keine Änderungen.
 
 ## Betrieb Kosten und Grenzen
 

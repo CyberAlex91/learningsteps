@@ -363,7 +363,7 @@ def guide(final):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--draft",action="store_true");args=parser.parse_args()
     file=ROOT/"artifacts/azure/evolution-recovery-final.json"
-    final=json.loads(file.read_text()) if file.exists() else {}
+    final=json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
     if not args.draft and not final.get("passed"):
         raise SystemExit("Final reports require actual successful recovery evidence; use --draft for QA")
     report=contents(final)

@@ -205,7 +205,7 @@ python3 app/scripts/recovery.py restore-guards
 
 infrastructure legt die Azure-Ressourcen wieder an. bootstrap stellt Images, Datenbankschema, SQL-Rechte und gesicherte Notizen wieder her. Es aktualisiert die Clusterkonfiguration und die neu entstandene GitHub-Identität. Der Zertifikatszustand wird vor dem Gateway-Start restauriert; die öffentliche Konfiguration wird erst nach stabiler Erreichbarkeit aktiviert.
 
-Zum Schluss müssen Dateninhalt, neue Clusterkennungen, zwei bereite API-Pods, gültiges öffentliches HTTPS, echter Modellzugriff und Terraform No changes überprüft sein. Der konkrete Abschlussstatus dieses Laufs lautet: 45 Ressourcen vollstÃ¤ndig abgebaut und wiederhergestellt; eine Notiz mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschrÃ¤nkter Datenbankzugriff und echte KI per Workload Identity erneut geprÃ¼ft. Terraform: keine Ã„nderungen.
+Zum Schluss müssen Dateninhalt, neue Clusterkennungen, zwei bereite API-Pods, gültiges öffentliches HTTPS, echter Modellzugriff und Terraform No changes überprüft sein. Der konkrete Abschlussstatus dieses Laufs lautet: 45 Ressourcen vollständig abgebaut und wiederhergestellt; eine Notiz mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschränkter Datenbankzugriff und echte KI per Workload Identity erneut geprüft. Terraform: keine Änderungen.
 
 Die detaillierten Voraussetzungen, Wiederholungsgrenzen und Dateipfade stehen in RECOVERY.md. Diesen Ablauf nicht als gewöhnlichen täglichen Start verwenden.
 

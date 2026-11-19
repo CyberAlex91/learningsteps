@@ -34,7 +34,7 @@ def git(*args):
 
 
 def main():
-    final = json.loads((ROOT / "artifacts/azure/evolution-recovery-final.json").read_text())
+    final = json.loads((ROOT / "artifacts/azure/evolution-recovery-final.json").read_text(encoding="utf-8"))
     if final.get("passed") is not True:
         raise SystemExit("Actual recovery acceptance is required")
     if git("status", "--porcelain").strip():

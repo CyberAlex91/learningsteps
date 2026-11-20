@@ -39,7 +39,9 @@ def k(*args, **kwargs):
 
 def save(data):
     RELEASE.parent.mkdir(exist_ok=True)
-    RELEASE.write_text(json.dumps(data, indent=2) + "\n")
+    temporary = RELEASE.with_suffix(".tmp")
+    temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    os.replace(temporary, RELEASE)
 
 
 def sha(path):
@@ -68,7 +70,8 @@ def prepare(backup):
         raise RuntimeError("Wrong cluster context")
     release = {"prepared_at": datetime.now(timezone.utc).isoformat(), "data_backup": str(backup.relative_to(ROOT)),
                "data_sha256": info["data_sha256"], "images": {}, "source_commit": run(["git", "-C", str(APP), "rev-parse", "HEAD"])}
-    directory = ROOT / "artifacts/recovery"; directory.mkdir(parents=True, exist_ok=True)
+    directory = ROOT / "artifacts/recovery" / (datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S") + "-" + os.urandom(3).hex())
+    directory.mkdir(parents=True, exist_ok=True)
     login()
     for component, deployment, container in [("api", "learningsteps-api", "api"), ("gateway", "learningsteps-https", "gateway")]:
         obj = json.loads(k("get", "deployment", deployment, "-n", "learningsteps", "-o", "json"))
@@ -217,17 +220,28 @@ def bootstrap(release):
 
 def infrastructure():
     directory = APP / "infra-terraform"
-    state = run(["terraform", "-chdir=" + str(directory), "state", "list"])
-    if state.strip():
-        raise RuntimeError("Infrastructure recreation requires an empty managed state after verified destroy")
-    print("Recreating Foundry resource group before soft-delete recovery...", flush=True)
-    run(["terraform", "-chdir=" + str(directory), "apply", "-auto-approve", "-target=azurerm_resource_group.ai"], timeout=600)
-    run(["az", "cognitiveservices", "account", "recover", "-g", "rg-learningsteps-ai", "-n", "learningsteps-ai-alex-709d408c", "-l", "germanywestcentral", "--subscription", SUB, "-o", "none"], timeout=600)
+    state = set(run(["terraform", "-chdir=" + str(directory), "state", "list"]).splitlines())
+    if "azurerm_resource_group.ai" not in state:
+        print("Recreating Foundry resource group before optional soft-delete recovery...", flush=True)
+        run(["terraform", "-chdir=" + str(directory), "apply", "-auto-approve", "-target=azurerm_resource_group.ai"], timeout=600)
     account_id = "/subscriptions/" + SUB + "/resourceGroups/rg-learningsteps-ai/providers/Microsoft.CognitiveServices/accounts/learningsteps-ai-alex-709d408c"
-    run(["terraform", "-chdir=" + str(directory), "import", "azurerm_cognitive_account.foundry", account_id], timeout=600)
-    print("Running complete Terraform apply; AKS/database provisioning can take several minutes...", flush=True)
-    result = subprocess.run(["terraform", "-chdir=" + str(directory), "apply", "-auto-approve"], timeout=3600)
-    if result.returncode:raise RuntimeError("Infrastructure apply incomplete; inspect state before retrying")
+    if "azurerm_cognitive_account.foundry" not in state:
+        existing = json.loads(run(["az", "resource", "list", "-g", "rg-learningsteps-ai", "--subscription", SUB, "-o", "json"]))
+        live = any(r["id"].lower() == account_id.lower() for r in existing)
+        if not live:
+            deleted = json.loads(run(["az", "cognitiveservices", "account", "list-deleted", "--subscription", SUB, "-o", "json"]))
+            matches = [r for r in deleted if r["name"] == "learningsteps-ai-alex-709d408c" and "/resourcegroups/rg-learningsteps-ai/" in r["id"].lower()]
+            if matches:
+                run(["az", "cognitiveservices", "account", "recover", "-g", "rg-learningsteps-ai", "-n", "learningsteps-ai-alex-709d408c", "-l", "germanywestcentral", "--subscription", SUB, "-o", "none"], timeout=600)
+                live = True
+        if live:run(["terraform", "-chdir=" + str(directory), "import", "azurerm_cognitive_account.foundry", account_id], timeout=600)
+    print("Planning complete infrastructure recreation/resume...", flush=True)
+    run(["terraform", "-chdir=" + str(directory), "plan", "-out=lifecycle-up.tfplan"], timeout=900)
+    plan = json.loads(run(["terraform", "-chdir=" + str(directory), "show", "-json", "lifecycle-up.tfplan"]))
+    if any("delete" in r["change"]["actions"] for r in plan.get("resource_changes", [])):
+        raise RuntimeError("Unexpected deletion/replacement in restore plan; review before continuing")
+    print("Applying non-destructive restore plan; AKS/database provisioning can take several minutes...", flush=True)
+    run(["terraform", "-chdir=" + str(directory), "apply", "lifecycle-up.tfplan"], timeout=3600)
     print("PASS: complete infrastructure apply finished", flush=True)
 
 
@@ -243,13 +257,18 @@ def destroy_plan():
     # Literal lifecycle guards cannot be variables in Terraform. Save exact
     # source files and disable only these three known adoption guards.
     original = {}
+    guard_backup = ROOT / ".state/evolution-guards.json"
+    resumed = json.loads(guard_backup.read_text()) if guard_backup.exists() else None
     for rel, count in [("foundry.tf", 2), ("database.tf", 1)]:
         path = APP / "infra-terraform" / rel; text = path.read_text()
+        if resumed is not None:
+            if text.count("prevent_destroy = false") != count:
+                raise RuntimeError("Unexpected lifecycle guards during resumed teardown")
+            original[rel] = resumed[rel]
+            continue
         if text.count("prevent_destroy = true") != count:
             raise RuntimeError("Unexpected lifecycle guard configuration")
         original[rel] = text
-    guard_backup = ROOT / ".state/evolution-guards.json"
-    if guard_backup.exists():raise RuntimeError("Existing guard transition requires review")
     guard_backup.write_text(json.dumps(original, indent=2))
     for rel, text in original.items():
         (APP / "infra-terraform" / rel).write_text(text.replace("prevent_destroy = true", "prevent_destroy = false"))
@@ -264,8 +283,8 @@ def destroy_plan():
         if actions != ["delete"]:raise RuntimeError("Unexpected non-delete action in destroy plan")
         before = resource["change"]["before"]
         rid = before.get("id", "")
-        allowed = any(("/resourcegroups/" + name) in rid.lower() for name in
-                      ("rg-learningsteps-ai", "rg-learningsteps-data", "rg-learningsteps-evolution"))
+        allowed_groups = {"rg-learningsteps-ai", "rg-learningsteps-data", "rg-learningsteps-evolution", "rg-learningsteps-evolution-nodes"}
+        allowed = "/resourcegroups/" in rid.lower() and rid.lower().split("/resourcegroups/", 1)[1].split("/", 1)[0] in allowed_groups
         allowed = allowed or resource["type"] == "azurerm_key_vault_secret" and rid.startswith("https://kv-lsteps-0ad5f630.vault.azure.net/secrets/")
         if not allowed:raise RuntimeError("Resource outside approved project groups in destroy plan")
         deletions.append({"address": resource["address"], "id": rid})
@@ -282,6 +301,8 @@ def restore_guards():
     for rel, text in original.items():
         current = APP / "infra-terraform" / rel
         content = current.read_text()
+        if content.count("prevent_destroy = true") == text.count("prevent_destroy = true") and "prevent_destroy = false" not in content:
+            continue
         if content.count("prevent_destroy = false") != text.count("prevent_destroy = true"):
             raise RuntimeError("Unexpected lifecycle guards; restore manually")
         # Preserve reviewed capacity corrections made during actual rebuild.

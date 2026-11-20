@@ -1,6 +1,24 @@
 <!-- Zweck: Erklärt die Anwendung, Architektur und den Einstieg in die aktuelle Evolution-Phase. -->
 # LearningSteps Evolution
 
+Aktueller Betriebsmodus ab 20.11.2026: vollständiger Cloud-Abbau einschließlich
+Remote-State-Speicher. Vorhandene Notizen, genaue Images und Zertifikate sind
+privat lokal gesichert. Die folgende Architektur beschreibt den nachgewiesenen,
+bei Bedarf wiederherstellbaren Betrieb, keine aktuell laufende Website.
+
+**Ort: WSL-Terminal, übergeordneter LearningSteps-Ordner.**
+
+```bash
+python3 app/scripts/lifecycle.py up      # wiederherstellen, danach laufende Kosten
+python3 app/scripts/lifecycle.py down    # sichern und vollständig abbauen
+python3 app/scripts/lifecycle.py check   # rein lokale Sicherungsprüfung
+```
+
+Alternativ aus PowerShell: `app/scripts/LearningSteps.ps1 -Action up`.
+Details und private Voraussetzungen: [RECOVERY.md](RECOVERY.md).
+Git und das Abgabe-ZIP enthalten die privaten Notizbackups und Schlüssel nicht.
+
+
 LearningSteps ist ein Lerntagebuch: angemeldete Nutzer speichern ihre Arbeit
 (`work`), Schwierigkeiten (`struggle`) und nächsten Schritte (`intention`).
 FastAPI stellt die API bereit, PostgreSQL speichert die Einträge. Swagger unter

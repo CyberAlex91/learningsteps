@@ -19,6 +19,9 @@ from reportlab.platypus.tableofcontents import TableOfContents
 
 ROOT = Path(__file__).resolve().parents[2]
 APP = ROOT / "app"
+DOCUMENT_DATE = "19.11.2026"
+OFFLINE_RECORD = {}
+STAGE_OUTPUT = False
 BLUE = colors.HexColor("#183B61")
 RED = colors.HexColor("#B33D49")
 PALE = colors.HexColor("#F0F4F8")
@@ -95,7 +98,7 @@ def page(canvas, doc):
         canvas.drawString(62,H-405,"Terraform · AKS · CI/CD · sichere KI")
         canvas.setFillColor(colors.white);canvas.rect(62,H-438,164,7,fill=1,stroke=0)
         canvas.setStrokeColor(colors.white);canvas.setLineWidth(.5);canvas.line(62,224,W-62,224)
-        for x,y,label,value in [(62,196,"VERFASSER","Alexander Plank"),(W/2+28,196,"STAND","19.11.2026"),
+        for x,y,label,value in [(62,196,"VERFASSER","Alexander Plank"),(W/2+28,196,"STAND",DOCUMENT_DATE),
                                 (62,137,"PROJEKT","CyberSteps Weeks 3–6"),(W/2+28,137,"FASSUNG",doc.version_label)]:
             canvas.setFont("Body",7);canvas.drawString(x,y,label)
             canvas.setFont("BodyBold",10);canvas.drawString(x,y-20,value)
@@ -106,19 +109,19 @@ def page(canvas, doc):
     canvas.setFillColor(GRAY);canvas.setFont("Body",7)
     canvas.drawString(M,H-48,"LEARNINGSTEPS EVOLUTION | "+doc.kind.upper())
     canvas.setStrokeColor(colors.HexColor("#CCD7E2"));canvas.setLineWidth(.4);canvas.line(M,39,W-M,39)
-    canvas.drawString(M,27,"Alexander Plank | 19.11.2026 | "+doc.version_label)
+    canvas.drawString(M,27,"Alexander Plank | "+DOCUMENT_DATE+" | "+doc.version_label)
     canvas.drawRightString(W-M,27,"Seite "+str(doc.page));canvas.restoreState()
 
 
 def write_document(filename, kind, subtitle, sections, draft):
-    output = ROOT / (".state/report-qa" if draft else "output/pdf")
+    output = ROOT / (".state/report-qa/ready" if STAGE_OUTPUT else ".state/report-qa" if draft else "output/pdf")
     output.mkdir(parents=True,exist_ok=True)
     doc = Report(str(output/(filename+".pdf")),pagesize=A4,leftMargin=M,rightMargin=M,topMargin=65,bottomMargin=53,
                  title="LearningSteps Evolution "+kind,author="Alexander Plank")
     doc.kind=kind;doc.subtitle=subtitle;doc.version_label="Entwurf – Wiederaufbauprüfung offen" if draft else "Finale Projektfassung"
     toc=TableOfContents();toc.levelStyles=[ParagraphStyle("TOC",fontName="Body",fontSize=10,leading=16,spaceBefore=5,textColor=BLUE,leftIndent=0,firstLineIndent=0)]
     story=[Spacer(1,1),PageBreak(),p("Inhalt","h2"),toc,PageBreak()]
-    md=["<!-- Zweck: "+kind+" des LearningSteps-Evolution-Projekts mit tatsächlichen Nachweisen. -->", "# LearningSteps Evolution", "", "Alexander Plank | 19.11.2026 | "+doc.version_label, ""]
+    md=["<!-- Zweck: "+kind+" des LearningSteps-Evolution-Projekts mit tatsächlichen Nachweisen. -->", "# LearningSteps Evolution", "", "Alexander Plank | "+DOCUMENT_DATE+" | "+doc.version_label, ""]
     for index,(title,blocks) in enumerate(sections):
         if index:story.append(PageBreak())
         story.append(p(title,"h1"));md += ["## "+title,""]
@@ -143,6 +146,8 @@ def write_document(filename, kind, subtitle, sections, draft):
 
 def contents(final):
     status = "Der vollständige Wiederaufbau ist nachgewiesen." if final.get("passed") else "Der vollständige Wiederaufbau wird aktuell geprüft; noch kein Erfolgsnachweis."
+    if OFFLINE_RECORD:
+        status += " Dieser Betriebsnachweis stammt vom 19.11.2026. Aktuell ist die Cloud auf Wunsch vollständig abgebaut, einschließlich State-Speicher. Der Abbau wurde am 20.11.2026 gesondert geprüft; die folgende Architektur beschreibt den wiederherstellbaren Betriebsstand."
     report = [
         ("Ergebnis und Geltungsbereich",[
             ("p","LearningSteps wurde von einer manuell betriebenen Anwendung zu einem durch Terraform verwalteten Cloud-System mit automatischer Auslieferung weiterentwickelt. FastAPI läuft in gehärteten Containern auf AKS. PostgreSQL ist privat erreichbar; Nutzer melden sich über Entra an. Eine serverseitige KI fasst ausschließlich die gespeicherten eigenen Notizen zusammen."),
@@ -262,7 +267,7 @@ def contents(final):
             ("p","Die Aufgabenabdeckung beruht auf dem bereitgestellten Projektbrief und den tatsächlichen Projektartefakten. Technische Referenzen dienen zum Nachvollziehen der verwendeten Funktionen; sie ersetzen keine Ausführungsnachweise."),
             ("table",["Referenz","Verwendeter Zusammenhang"],[("AzureRM Provider v5.14.0","Cognitive Account/Deployment, Feature-Schalter und Soft-Delete-Verhalten."),("Microsoft Azure Identity Python","WorkloadIdentityCredential und die vom AKS-Webhook injizierten Identitätsparameter."),("Microsoft Azure OpenAI RBAC","Cognitive Services OpenAI User als Inferenzrecht ohne Schlüsselverwaltung."),("Gitleaks Dokumentation","Git-Historienmodus, vollständige Maskierung und exakte Fingerprints."),("Kubernetes-Dokumentation","HPA, Ressourcengrößen, Probes und deklarative Deployments."),("Projekt-Quellcode und Messprotokolle","Konkrete Versionen, Befehle, erwartete Schutzgrenzen und beobachtete Ergebnisse.")]),
             ("small","https://github.com/hashicorp/terraform-provider-azurerm/tree/v5.14.0/website/docs\nhttps://learn.microsoft.com/python/api/azure-identity/azure.identity.aio.workloadidentitycredential\nhttps://learn.microsoft.com/azure/foundry-classic/openai/how-to/role-based-access-control\nhttps://github.com/gitleaks/gitleaks\nhttps://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"),
-            ("p","Alle angegebenen Prüfergebnisse beziehen sich auf den dokumentierten Projektstand vom 19.11.2026. Zukünftige Versionen, Modellverfügbarkeit, Quoten, Kosten und Advisories können sich ändern. Die festgelegten Versionen und Images werden vor einem späteren produktiven Einsatz erneut geprüft."),
+            ("p","Die ursprünglichen Funktions-, CI- und Wiederaufbauprüfungen stammen vom 19.11.2026. Der vollständige Kostenabbau und die neue Backend-Wiederherstellung sind als Ergänzung vom 20.11.2026 getrennt ausgewiesen. Zukünftige Versionen, Modellverfügbarkeit, Quoten, Kosten und Advisories können sich ändern."),
         ]),
     ])
     return report
@@ -360,15 +365,48 @@ def guide(final):
     ]
 
 
+def offline_chapter():
+    return ("Vollständiger Kostenabbau und Wiederstart", [
+        ("p", "Stand 20.11.2026: Das Azure-Inventar meldet null aktive LearningSteps-Ressourcen. Alle fünf Projektgruppen einschließlich rg-learningsteps-tfstate wurden entfernt. Die Website ist deshalb aktuell offline. Historische Abnahmen bleiben gültige Nachweise des zuvor laufenden Systems."),
+        ("table", ["Aktion", "Bedeutung"], [
+            ("up", "Backend, Infrastruktur, Images, Notizen und HTTPS wiederherstellen; danach entstehen erneut Azure-Kosten."),
+            ("down", "Frische geprüfte Sicherung erzeugen und sämtliche eigenen Azure-Ressourcen einschließlich Backend entfernen."),
+            ("check", "Sicherungen lokal entschlüsseln und prüfen; keine Cloud-Ressourcen starten."),
+            ("status", "Azure-Inventar nur lesen; nichts neu anlegen."),
+        ]),
+        ("p", "Ort: WSL-Terminal in VS Code, Projektordner LearningSteps. Für eine spätere Nutzung genügt der erste Befehl. Der zweite ist für den erneuten vollständigen Abbau nach der Nutzung vorgesehen:"),
+        ("code", "python3 app/scripts/lifecycle.py up\npython3 app/scripts/lifecycle.py down"),
+        ("p", "Alternativ startet scripts/LearningSteps.ps1 die gewünschte Aktion aus PowerShell und führt Azure weiterhin in WSL aus. Docker Desktop wird bei Bedarf lokal gestartet. Angemeldete Azure-/GitHub-CLI und die privaten Wiederherstellungsdateien bleiben Voraussetzungen. Ein Git-Clone oder das öffentliche Abgabe-ZIP allein enthält deine gesicherten Notizen und Schlüssel nicht."),
+        ("p", "Die frische Datensicherung wurde tatsächlich isoliert restauriert und vollständig verglichen. Der neue Backend-Aufbau wird separat geprüft und anschließend wieder entfernt. Der gesamte Anwendungs-Neuaufbau ist aus dem realen Lauf vom 19.11. belegt; ein erneuter kompletter up-Lauf am Ende des Kostenabbaus wurde bewusst nicht ausgeführt, weil er wieder laufende Ressourcen anlegen würde."),
+        ("p", "Die Automatik speichert ihren Fortschritt und setzt alte Restore-Markierungen nur einmal je neuem Zyklus zurück. Nach erfolgreicher Wiederherstellung wird die Cloud-Auslieferung wieder freigegeben; während des Abbaus bleibt LEARNINGSTEPS_CLOUD_ENABLED=false. Prüfungen können weiter laufen, ohne Azure neu zu befüllen."),
+        ("small", "Nachweise: artifacts/azure/lifecycle-down-check.json und backend-recreation-check.json. Details und Voraussetzungen: RECOVERY.md. Entra-Anmelderegistrierungen bleiben erhalten. Softgelöschte Standarddienste können noch als Wiederherstellungsobjekte sichtbar sein; vergangene Abrechnung kann verzögert erscheinen."),
+    ])
+
+
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--draft",action="store_true");args=parser.parse_args()
+    global DOCUMENT_DATE, OFFLINE_RECORD, STAGE_OUTPUT
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--draft",action="store_true")
+    parser.add_argument("--stage", action="store_true", help="Render final review copies privately while an older PDF is open")
+    args=parser.parse_args();STAGE_OUTPUT=args.stage
     file=ROOT/"artifacts/azure/evolution-recovery-final.json"
     final=json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
     if not args.draft and not final.get("passed"):
         raise SystemExit("Final reports require actual successful recovery evidence; use --draft for QA")
+    off = ROOT / "artifacts/azure/lifecycle-down-check.json"
+    if off.exists():
+        evidence = json.loads(off.read_text(encoding="utf-8"))
+        if evidence.get("passed"):
+            OFFLINE_RECORD = evidence; DOCUMENT_DATE = "20.11.2026"
     report=contents(final)
+    explanation=guide(final)
+    if OFFLINE_RECORD:
+        report.insert(1, offline_chapter())
+        explanation.insert(1, offline_chapter())
+        for title, blocks in explanation:
+            if title == "Die Cloud nach einer Pause benutzen":
+                blocks.insert(0, ("p", "Dieser Abschnitt gilt nur für noch vorhandene, lediglich gestoppte Dienste. Nach dem vollständigen Abbau zuerst lifecycle.py up verwenden; az aks start kann einen gelöschten Cluster nicht neu erstellen."))
     print(write_document("LearningSteps-Evolution-Projektbericht","Technischer Projektbericht","Automatisierte Azure-Architektur",report,args.draft))
-    print(write_document("LearningSteps-Evolution-Ablauf","Ablauf zum Verstehen und Nachmachen","Vom Nutzerklick zum sicheren Neuaufbau",guide(final),args.draft))
+    print(write_document("LearningSteps-Evolution-Ablauf","Ablauf zum Verstehen und Nachmachen","Vom Nutzerklick zum sicheren Neuaufbau",explanation,args.draft))
 
 
 if __name__ == "__main__":

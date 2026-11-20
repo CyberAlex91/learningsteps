@@ -61,3 +61,15 @@ Die zwei AKS-Knoten haben einen ermittelten reinen VM-Listenpreis von zusammen
 Zum normalen Pausieren AKS und PostgreSQL gezielt stoppen. PostgreSQL startet
 nach sieben Tagen automatisch wieder; Speicher, ACR, IPs und weitere Ressourcen
 können weiter Kosten verursachen. Kein automatischer Stopp während der Arbeit.
+
+## Ergänzung 20.11.2026: vollständige Kostenpause
+
+Auf Wunsch werden alle aktiven LearningSteps-Ressourcen entfernt, einschließlich
+des beim ersten Wiederaufbautest noch erhaltenen State-Speichers. Der eigene
+Lifecycle-Befehl erstellt beim Wiederstart auch das Backend neu. Ein frisches
+verschlüsseltes Journalbackup wurde isoliert restauriert und vollständig mit
+seinem Original verglichen. Historische Abnahme am 19.11. und aktuelle Abschaltung
+sind getrennte Nachweise. Aktueller Inventarbeleg: lifecycle-down-check.json;
+Backend-Test: backend-recreation-check.json. Neue Sicherheits-/Wiederaufnahmetests
+sind in CI integriert. Der kombinierte vollständige up-Lauf wird während der
+Kostenpause nicht noch einmal gestartet; siehe die genaue Testgrenze in RECOVERY.md.

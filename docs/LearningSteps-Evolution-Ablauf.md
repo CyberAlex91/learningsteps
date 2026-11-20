@@ -1,7 +1,7 @@
 <!-- Zweck: Ablauf zum Verstehen und Nachmachen des LearningSteps-Evolution-Projekts mit tatsächlichen Nachweisen. -->
 # LearningSteps Evolution
 
-Alexander Plank | 19.11.2026 | Finale Projektfassung
+Alexander Plank | 20.11.2026 | Finale Projektfassung
 
 ## Was LearningSteps macht
 
@@ -20,6 +20,32 @@ Die Seite /docs ist Swagger: eine technische Oberfläche zum Ausprobieren der AP
 Jeder Eintrag bekommt eine eindeutige ID. Sie ist die Adresse dieses Datensatzes, kein Passwort. Für gezielte Änderungen kopierst du die ID aus der erfolgreichen POST-Antwort. Zwei POST-Ausführungen können zwei verschiedene Einträge erzeugen; zwei GET-Ausführungen lesen denselben aktuellen Datenbestand.
 
 Die KI-Funktion erzeugt keine neue Notiz. Sie liest deine gespeicherten eigenen Notizen und formuliert daraus Gelerntes, Schwierigkeiten und nächste Schritte. Alte Absichten bleiben alte Absichten: Die KI weiß nicht automatisch, welche Schritte du inzwischen tatsächlich erledigt hast.
+
+## Vollständiger Kostenabbau und Wiederstart
+
+Stand 20.11.2026: Das Azure-Inventar meldet null aktive LearningSteps-Ressourcen. Alle fünf Projektgruppen einschließlich rg-learningsteps-tfstate wurden entfernt. Die Website ist deshalb aktuell offline. Historische Abnahmen bleiben gültige Nachweise des zuvor laufenden Systems.
+
+| Aktion | Bedeutung |
+| --- | --- |
+| up | Backend, Infrastruktur, Images, Notizen und HTTPS wiederherstellen; danach entstehen erneut Azure-Kosten. |
+| down | Frische geprüfte Sicherung erzeugen und sämtliche eigenen Azure-Ressourcen einschließlich Backend entfernen. |
+| check | Sicherungen lokal entschlüsseln und prüfen; keine Cloud-Ressourcen starten. |
+| status | Azure-Inventar nur lesen; nichts neu anlegen. |
+
+Ort: WSL-Terminal in VS Code, Projektordner LearningSteps. Für eine spätere Nutzung genügt der erste Befehl. Der zweite ist für den erneuten vollständigen Abbau nach der Nutzung vorgesehen:
+
+```bash
+python3 app/scripts/lifecycle.py up
+python3 app/scripts/lifecycle.py down
+```
+
+Alternativ startet scripts/LearningSteps.ps1 die gewünschte Aktion aus PowerShell und führt Azure weiterhin in WSL aus. Docker Desktop wird bei Bedarf lokal gestartet. Angemeldete Azure-/GitHub-CLI und die privaten Wiederherstellungsdateien bleiben Voraussetzungen. Ein Git-Clone oder das öffentliche Abgabe-ZIP allein enthält deine gesicherten Notizen und Schlüssel nicht.
+
+Die frische Datensicherung wurde tatsächlich isoliert restauriert und vollständig verglichen. Der neue Backend-Aufbau wird separat geprüft und anschließend wieder entfernt. Der gesamte Anwendungs-Neuaufbau ist aus dem realen Lauf vom 19.11. belegt; ein erneuter kompletter up-Lauf am Ende des Kostenabbaus wurde bewusst nicht ausgeführt, weil er wieder laufende Ressourcen anlegen würde.
+
+Die Automatik speichert ihren Fortschritt und setzt alte Restore-Markierungen nur einmal je neuem Zyklus zurück. Nach erfolgreicher Wiederherstellung wird die Cloud-Auslieferung wieder freigegeben; während des Abbaus bleibt LEARNINGSTEPS_CLOUD_ENABLED=false. Prüfungen können weiter laufen, ohne Azure neu zu befüllen.
+
+Nachweise: artifacts/azure/lifecycle-down-check.json und backend-recreation-check.json. Details und Voraussetzungen: RECOVERY.md. Entra-Anmelderegistrierungen bleiben erhalten. Softgelöschte Standarddienste können noch als Wiederherstellungsobjekte sichtbar sein; vergangene Abrechnung kann verzögert erscheinen.
 
 ## Wie eine Anfrage durch das System geht
 
@@ -61,6 +87,8 @@ KUBECONFIG wählt ausdrücklich unseren Clusterzugang. Ohne diese Einstellung k�
 In WSL kann zusätzlich eine native Docker-Engine vorhanden sein. Diese ist nicht automatisch Docker Desktop. Deshalb verwenden die bisherigen Projekt-Buildskripte ausdrücklich die Windows-Docker-Datei. Ein leerer docker-ps-Aufruf gegen die andere Engine bedeutet nicht, dass unsere Container gelöscht wurden.
 
 ## Die Cloud nach einer Pause benutzen
+
+Dieser Abschnitt gilt nur für noch vorhandene, lediglich gestoppte Dienste. Nach dem vollständigen Abbau zuerst lifecycle.py up verwenden; az aks start kann einen gelöschten Cluster nicht neu erstellen.
 
 Beginne mit lesenden Prüfungen. Eine erfolgreiche Azure-Anmeldung in PowerShell ist nicht automatisch dieselbe Anmeldung wie in WSL oder im Entwicklungscontainer. Für unsere Cloud-Befehle zählt die WSL-Azure-CLI.
 

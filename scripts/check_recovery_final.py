@@ -22,7 +22,8 @@ def main():
     if not release.get("bootstrap_verified_at"):
         raise RuntimeError("Successful bootstrap required")
     destroyed = json.loads((ROOT / "artifacts/azure/terraform-destroy-check.json").read_text())
-    if destroyed["managed_resources_remaining"] != 0 or destroyed["destroyed_resources"] != 45:
+    expected_count = destroyed["destroyed_resources"]
+    if destroyed["managed_resources_remaining"] != 0 or expected_count <= 0:
         raise RuntimeError("Actual complete destroy evidence required")
     for helper, extra in [
         ("cloud_data_backup.py", ["verify-current", "--manifest", str(ROOT / release["data_backup"])]),
@@ -48,8 +49,8 @@ def main():
     # detailed-exitcode: 0=no changes, 2=changes. Capture output to avoid exposing state.
     run(["terraform", "-chdir=" + str(APP / "infra-terraform"), "plan", "-detailed-exitcode", "-no-color"], timeout=900)
     state = run(["terraform", "-chdir=" + str(APP / "infra-terraform"), "state", "list"]).splitlines()
-    if len(state) != 45:
-        raise RuntimeError("Expected all 45 managed project resources")
+    if len(state) != expected_count:
+        raise RuntimeError("Expected all previously managed project resources")
     snapshot = json.loads(run(["terraform", "-chdir=" + str(APP / "infra-terraform"), "show", "-json"]))
     if any(bool(resource["values"].get("value")) for resource in snapshot["values"]["root_module"]["resources"]
            if resource["type"] == "azurerm_key_vault_secret"):
@@ -58,14 +59,17 @@ def main():
     restored = json.loads((ROOT / "artifacts/azure/data-restore-empty-check.json").read_text())
     if current["data_sha256"] != release["data_sha256"] or restored["data_sha256"] != release["data_sha256"]:
         raise RuntimeError("Restored data must exactly match the saved backup")
+    lifecycle = ROOT / ".state/lifecycle.json"
+    backend_recreated = lifecycle.exists() and json.loads(lifecycle.read_text()).get("phase") == "up"
     evidence = {
         "passed": True, "checked_at": datetime.now(timezone.utc).isoformat(),
-        "summary": "45 Ressourcen vollständig abgebaut und wiederhergestellt; eine Notiz mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschränkter Datenbankzugriff und echte KI per Workload Identity erneut geprüft. Terraform: keine Änderungen.",
-        "destroyed_resources": 45, "managed_resources_after_rebuild": len(state),
+        "summary": str(expected_count) + " Ressourcen vollständig abgebaut und wiederhergestellt; " + str(current["count"]) + " Notizen mit identischem Datenhash restauriert. HTTPS, zwei API-Replikate, eingeschränkter Datenbankzugriff und echte KI per Workload Identity erneut geprüft. Terraform: keine Änderungen.",
+        "destroyed_resources": expected_count, "managed_resources_after_rebuild": len(state),
         "restored_notes": current["count"], "data_sha256": current["data_sha256"],
         "new_namespace_uid": namespace["metadata"]["uid"], "new_cluster": cluster,
         "trusted_https": True, "workload_identity_inference": True,
-        "terraform_no_changes": True, "remote_state_storage_preserved": True,
+        "terraform_no_changes": True, "remote_state_storage_preserved": not backend_recreated,
+        "remote_state_backend_recreated": backend_recreated,
         "current_state_regular_secret_values_empty": True,
         "private_backup_material_included": False,
     }

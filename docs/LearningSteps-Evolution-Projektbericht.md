@@ -1,13 +1,13 @@
 <!-- Zweck: Technischer Projektbericht des LearningSteps-Evolution-Projekts mit tatsächlichen Nachweisen. -->
 # LearningSteps Evolution
 
-Alexander Plank | 19.11.2026 | Finale Projektfassung
+Alexander Plank | 20.11.2026 | Finale Projektfassung
 
 ## Ergebnis und Geltungsbereich
 
 LearningSteps wurde von einer manuell betriebenen Anwendung zu einem durch Terraform verwalteten Cloud-System mit automatischer Auslieferung weiterentwickelt. FastAPI läuft in gehärteten Containern auf AKS. PostgreSQL ist privat erreichbar; Nutzer melden sich über Entra an. Eine serverseitige KI fasst ausschließlich die gespeicherten eigenen Notizen zusammen.
 
-Der vollständige Wiederaufbau ist nachgewiesen.
+Der vollständige Wiederaufbau ist nachgewiesen. Dieser Betriebsnachweis stammt vom 19.11.2026. Aktuell ist die Cloud auf Wunsch vollständig abgebaut, einschließlich State-Speicher. Der Abbau wurde am 20.11.2026 gesondert geprüft; die folgende Architektur beschreibt den wiederherstellbaren Betriebsstand.
 
 | Abnahme | Tatsächlicher Nachweis |
 | --- | --- |
@@ -18,6 +18,32 @@ Der vollständige Wiederaufbau ist nachgewiesen.
 | Cloud-KI | Drei synthetische RAM-Notizen per Workload Identity; anschließend gespeicherte eigene Notiz mit HTTP 200 zusammengefasst. |
 
 Die optionale Prometheus-/Grafana-Erweiterung wurde nicht implementiert. Die Datenbankrechte sind auf die Anwendung begrenzt; die Trennung einzelner Nutzer erfolgt in der API und wurde mit synthetischen Identitäten getestet. Dieser Bericht beschreibt einen kontrollierten Lernprojektstand, keine uneingeschränkte Produktionsfreigabe.
+
+## Vollständiger Kostenabbau und Wiederstart
+
+Stand 20.11.2026: Das Azure-Inventar meldet null aktive LearningSteps-Ressourcen. Alle fünf Projektgruppen einschließlich rg-learningsteps-tfstate wurden entfernt. Die Website ist deshalb aktuell offline. Historische Abnahmen bleiben gültige Nachweise des zuvor laufenden Systems.
+
+| Aktion | Bedeutung |
+| --- | --- |
+| up | Backend, Infrastruktur, Images, Notizen und HTTPS wiederherstellen; danach entstehen erneut Azure-Kosten. |
+| down | Frische geprüfte Sicherung erzeugen und sämtliche eigenen Azure-Ressourcen einschließlich Backend entfernen. |
+| check | Sicherungen lokal entschlüsseln und prüfen; keine Cloud-Ressourcen starten. |
+| status | Azure-Inventar nur lesen; nichts neu anlegen. |
+
+Ort: WSL-Terminal in VS Code, Projektordner LearningSteps. Für eine spätere Nutzung genügt der erste Befehl. Der zweite ist für den erneuten vollständigen Abbau nach der Nutzung vorgesehen:
+
+```bash
+python3 app/scripts/lifecycle.py up
+python3 app/scripts/lifecycle.py down
+```
+
+Alternativ startet scripts/LearningSteps.ps1 die gewünschte Aktion aus PowerShell und führt Azure weiterhin in WSL aus. Docker Desktop wird bei Bedarf lokal gestartet. Angemeldete Azure-/GitHub-CLI und die privaten Wiederherstellungsdateien bleiben Voraussetzungen. Ein Git-Clone oder das öffentliche Abgabe-ZIP allein enthält deine gesicherten Notizen und Schlüssel nicht.
+
+Die frische Datensicherung wurde tatsächlich isoliert restauriert und vollständig verglichen. Der neue Backend-Aufbau wird separat geprüft und anschließend wieder entfernt. Der gesamte Anwendungs-Neuaufbau ist aus dem realen Lauf vom 19.11. belegt; ein erneuter kompletter up-Lauf am Ende des Kostenabbaus wurde bewusst nicht ausgeführt, weil er wieder laufende Ressourcen anlegen würde.
+
+Die Automatik speichert ihren Fortschritt und setzt alte Restore-Markierungen nur einmal je neuem Zyklus zurück. Nach erfolgreicher Wiederherstellung wird die Cloud-Auslieferung wieder freigegeben; während des Abbaus bleibt LEARNINGSTEPS_CLOUD_ENABLED=false. Prüfungen können weiter laufen, ohne Azure neu zu befüllen.
+
+Nachweise: artifacts/azure/lifecycle-down-check.json und backend-recreation-check.json. Details und Voraussetzungen: RECOVERY.md. Entra-Anmelderegistrierungen bleiben erhalten. Softgelöschte Standarddienste können noch als Wiederherstellungsobjekte sichtbar sein; vergangene Abrechnung kann verzögert erscheinen.
 
 ## Architektur und Kommunikationswege
 
@@ -217,7 +243,7 @@ Diese Sicherung ist eine vollständige Anwendungsdatensicherung für das bekannt
 
 ## Vollständiger Infrastrukturtest
 
-Der vollständige Wiederaufbau ist nachgewiesen.
+Der vollständige Wiederaufbau ist nachgewiesen. Dieser Betriebsnachweis stammt vom 19.11.2026. Aktuell ist die Cloud auf Wunsch vollständig abgebaut, einschließlich State-Speicher. Der Abbau wurde am 20.11.2026 gesondert geprüft; die folgende Architektur beschreibt den wiederherstellbaren Betriebsstand.
 
 Vor der Zerstörung wurden Sicherung und Rücksicherung geprüft, laufende API-Schreibzugriffe im Wartungsfenster angehalten und der Dateninhalt nochmals verglichen. Der öffentliche Kubernetes-Service und das gemountete Zertifikatsvolume wurden kontrolliert entfernt, bevor Terraform die dazugehörige Azure-Infrastruktur abbaut.
 
@@ -303,4 +329,4 @@ https://learn.microsoft.com/azure/foundry-classic/openai/how-to/role-based-acces
 https://github.com/gitleaks/gitleaks
 https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 
-Alle angegebenen Prüfergebnisse beziehen sich auf den dokumentierten Projektstand vom 19.11.2026. Zukünftige Versionen, Modellverfügbarkeit, Quoten, Kosten und Advisories können sich ändern. Die festgelegten Versionen und Images werden vor einem späteren produktiven Einsatz erneut geprüft.
+Die ursprünglichen Funktions-, CI- und Wiederaufbauprüfungen stammen vom 19.11.2026. Der vollständige Kostenabbau und die neue Backend-Wiederherstellung sind als Ergänzung vom 20.11.2026 getrennt ausgewiesen. Zukünftige Versionen, Modellverfügbarkeit, Quoten, Kosten und Advisories können sich ändern.

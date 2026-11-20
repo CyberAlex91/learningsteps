@@ -51,7 +51,7 @@ jobs:
       - name: Install locked app dependencies and lint tool
         run: |
           python -m pip install --only-binary=:all: -r api/requirements.lock
-          python -m pip install ruff==0.14.14
+          python -m pip install ruff==0.14.14 PyYAML==6.0.3
           python -m pip check
       - name: Lint syntax, invalid constructs and undefined names
         run: ruff check --select E9,F63,F7,F82 api tests scripts
@@ -123,7 +123,7 @@ jobs:
           cd "$RUNNER_TEMP"
           sha256sum api-image.tar > api-image.tar.sha256
       - name: Retain exact scanned image for trusted delivery
-        if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/main' && vars.LEARNINGSTEPS_CLOUD_ENABLED != 'false'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scanned-api-image
@@ -138,7 +138,7 @@ jobs:
   delivery:
     name: OIDC image push and AKS rollout
     needs: [quality, source-security, image-security]
-    if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.repository == 'CyberAlex91/learningsteps' && github.ref == 'refs/heads/main' && vars.LEARNINGSTEPS_CLOUD_ENABLED != 'false'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

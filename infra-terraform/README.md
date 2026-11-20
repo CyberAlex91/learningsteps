@@ -81,3 +81,15 @@ werden ausschließlich nach verifizierten Backups für den kontrollierten Abbau
 vorübergehend aufgehoben und anschließend wieder gesetzt. Der finale Plan muss
 wieder ohne Änderungen sein. Automatische SQL-Kennwortrotation, Datenbank-HA und
 Gateway-HA sind nicht implementiert.
+
+## Vollständiger Kostenabbau statt normaler Pause
+
+Seit 20.11.2026 kann `scripts/lifecycle.py down` nach geprüfter privater Sicherung
+auch das separate Remote-State-Storage entfernen. `up` erstellt dessen Gruppe,
+Storagekonto, Datenrolle, privaten Container, Versionierung und Löschschutz neu,
+bevor Terraform die Anwendungsressourcen wieder aufbaut. Die ursprüngliche
+Backend-Konfiguration in backend.tf bleibt versioniert. Ein direkter Terraform-
+Plan während des vollständigen Abbaus scheitert erwartungsgemäß am fehlenden
+Backend; für den Wiederstart zuerst lifecycle.py up benutzen.
+Die lokalen verschlüsselten States und Sicherungen nicht löschen. Details in
+RECOVERY.md. Entra-Anmelderegistrierungen bleiben erhalten.

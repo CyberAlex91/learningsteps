@@ -1,134 +1,153 @@
-<!-- Zweck: Beschreibt Sicherung, kontrollierten Infrastruktur-Abbau und Wiederherstellung einschließlich der absichtlich erhaltenen Schutzmechanismen. -->
-# Evolution sichern und vollständig wiederherstellen
+<!-- Zweck: Erklärt den vollständigen kostenfreien Abbau und den Wiederaufbau mit einem Befehl einschließlich State-Backend und Datensicherung. -->
+# LearningSteps vollständig abbauen und wiederherstellen
 
-## Umfang und Voraussetzungen
+Stand: 20.11.2026. Maßgeblich ist jetzt `scripts/lifecycle.py`.
+Der am 19.11. nachgewiesene erste Neuaufbau ließ den State-Speicher bestehen.
+Der neue vollständige Abbau entfernt auch diesen Speicher und seine Ressourcengruppe.
 
-Die Anwendung nutzt eine öffentliche Tabelle `entries`. Die logische Sicherung
-enthält alle Spalten und Zeilen einschließlich JSON-Inhalt, Nutzerkennungen und
-Zeitstempeln. Sie ist kein allgemeines PostgreSQL-Clusterbackup: Schema und Rollen
-kommen aus `database_setup.sql` und `configure_cloud_database.py`. Zusätzliche
-öffentliche Tabellen lassen den Export vorsorglich abbrechen.
+## Ein Befehl – Ort: WSL-Terminal in VS Code
 
-Die bestehenden Entra-Registrierungen für API und Swagger sowie das separate
-Remote-State-Backend sind dauerhafte Voraussetzungen. Sie werden in diesem
-Anwendungs-Destroy nicht gelöscht. Der Test rekonstruiert die 45 verwalteten
-Azure-Anwendungsressourcen und Kubernetes-Objekte, keinen leeren Entra-Tenant.
-
-Alle folgenden Befehle: **WSL-Terminal in VS Code**, Projektordner LearningSteps.
-Benötigt: angemeldete Azure CLI, GitHub CLI, Terraform, kubectl/kubelogin,
-Docker Desktop sowie Python mit `cryptography` und `PyYAML`. Die Python-Module
-sind auf diesem PC vorhanden; unter Ubuntu lassen sie sich als `python3-cryptography`
-und `python3-yaml` installieren. API-Paketabhängigkeiten bleiben separat gesperrt.
+Im übergeordneten LearningSteps-Projektordner:
 
 ```bash
-export PATH="$HOME/.local/share/learningsteps-tools/bin:$PATH"
-export KUBECONFIG="$HOME/.kube/learningsteps-evolution.yaml"
+python3 app/scripts/lifecycle.py down
+python3 app/scripts/lifecycle.py up
 ```
 
-## Sicherung vor jeder Zerstörung
+`down` sichert und löscht die Cloud. `up` erstellt sie bei Bedarf wieder und
+verursacht dann erneut Azure-Kosten. Nicht beide unmittelbar nacheinander
+aufrufen, wenn die Umgebung abgeschaltet bleiben soll.
+
+Nur lesend beziehungsweise ohne Cloud-Zugriff:
 
 ```bash
-python3 app/scripts/cloud_data_backup.py backup
-python3 app/scripts/cloud_data_backup.py check --manifest PFAD_ZUM_AUSGEGEBENEN_MANIFEST
-python3 app/scripts/recovery.py prepare --backup PFAD_ZUM_AUSGEGEBENEN_MANIFEST
+python3 app/scripts/lifecycle.py status
+python3 app/scripts/lifecycle.py check
 ```
 
-Der erste Schritt liest alle Anwendungsdaten über verifiziertes TLS in einen
-kurzlebigen Diagnose-Pod und verschlüsselt sie lokal mit AES-256-GCM. Kennwörter
-bleiben in Arbeitsspeicher/Standardinput. Der Schlüssel liegt nur unter
-`.secrets/backups`, das Chiffrat unter `artifacts/backups`. Die Windows-ACL des
-Schlüsselordners ist auf den Benutzer, SYSTEM und Administratoren beschränkt.
-Schlüssel und verschlüsselte Sicherung getrennt und außerhalb der Abgabe behalten.
+`status` liest Azure und zeigt vorhandene Projektressourcen. `check` prüft lokal
+Chiffrate, Schlüssel und Prüfsummen; es startet keine Cloud-Ressourcen.
 
-Der zweite Schritt restauriert in eine neue zufällig benannte Datenbank,
-vergleicht alle Inhalte per SHA-256 und entfernt ausschließlich diese Testdatenbank.
-Die reguläre Datenbank wird dabei nicht beschrieben. `prepare` sichert zusätzlich
-die ausgelieferten API-/Gateway-Images mit Digests und verschlüsselt den privaten
-ACME-/Zertifikatszustand. Die Wiederherstellung setzt das Vorhandensein dieser
-lokalen Dateien voraus: Terraform allein enthält keine Anwendungsdaten oder Images.
+## Alternativ ein Befehl – Ort: PowerShell
 
-## Abbau und Infrastruktur wieder anlegen
+Im LearningSteps-Projektordner:
 
-Vor dem Abbau die API in ein Wartungsfenster nehmen und mit `verify-current`
-den aktuellen Tabelleninhalt nochmals gegen die getestete Sicherung vergleichen.
-Es dürfen während des Abbaus keine neuen Notizen entstehen. Gateway-Service und
-Gateway-PVC kontrolliert vor AKS entfernen, damit Azure LoadBalancer und Disk
-ordnungsgemäß freigegeben werden.
-
-```bash
-python3 app/scripts/recovery.py plan-destroy
+```powershell
+.\app\scripts\LearningSteps.ps1 -Action up
+.\app\scripts\LearningSteps.ps1 -Action down
 ```
 
-Dieser Schritt verlangt geprüfte Daten-, Image- und Zertifikatssicherungen,
-speichert die ursprünglichen Terraform-Schutzdefinitionen und deaktiviert nur die
-drei bisherigen `prevent_destroy`-Übernahmesperren. Er erzeugt einen gespeicherten
-Destroy-Plan und eine Liste der betroffenen Projektressourcen. Der State-Speicher
-`rg-learningsteps-tfstate` ist ausdrücklich nicht im verwalteten Anwendungs-State.
-Den vollständigen Plan prüfen, bevor er angewendet wird.
+Ohne Aktionsangabe liest das PowerShell-Werkzeug nur den Status. Es führt alle
+Azure-Schritte in WSL aus. Benutzer ist standardmäßig cyberalex. Der Python-Ablauf
+setzt den eigenen Werkzeugpfad und die dedizierte kubeconfig selbst.
 
-```bash
-terraform -chdir=app/infra-terraform apply evolution-destroy.tfplan
-terraform -chdir=app/infra-terraform state list
-python3 app/scripts/recovery.py infrastructure
-python3 app/scripts/recovery.py bootstrap
-python3 app/scripts/recovery.py restore-guards
-terraform -chdir=app/infra-terraform plan
-```
+## Voraussetzungen
 
-`infrastructure` verlangt nach dem vollständigen Abbau einen leeren State.
-Es erstellt die Foundry-Ressourcengruppe, stellt das absichtlich softgelöschte
-Foundry-Konto über Azure CLI wieder her, importiert es in Terraform und führt
-den vollständigen Terraform-Apply aus. Der Key Vault wird vom Provider aus
-Soft-Delete wiederhergestellt. Purge Protection bleibt aktiviert; es gibt keinen
-Versuch, Schutzfristen zu umgehen. Damit sind geschützte Serviceidentitäten
-wiederhergestellt statt unwiederbringlich gepurgt. Der Modellstand und beide
-Modellzugriffsrollen werden wieder durch Terraform verwaltet.
+- Lokaler Projektordner mit unveränderten privaten Wiederherstellungsdateien.
+- Azure CLI in WSL, angemeldet in Alexander Plank - Sub im richtigen Tenant.
+- GitHub CLI in WSL für Lieferfreigabe und öffentliche Client-ID-Variablen.
+- Terraform, kubectl/kubelogin sowie Python mit cryptography und PyYAML in WSL.
+- Docker Desktop für Imagearchive. Das Werkzeug startet ihn bei Bedarf lokal
+  im Hintergrund; eventuell erforderliche Anmeldedialoge bleiben Benutzeraufgabe.
+- Bestehende Entra-Registrierungen für API und Swagger. Diese bleiben erhalten
+  und sind keine laufenden Azure-Rechenressourcen.
 
-`bootstrap` stellt die archivierten Images in ACR wieder her und vergleicht die
-AMD64-Manifeste, aktualisiert die dedizierte kubeconfig, richtet das DB-Schema
-und eingeschränkte App-Rechte ein und restauriert nur in eine leere Zieltabelle.
-Vorhandene Einträge lassen den Restore abbrechen; kein DELETE/TRUNCATE im Restore.
-Anschließend werden SA/CSI, API, HPA, Gateway und Zertifikatsvolume aufgebaut.
-Der gespeicherte private Zertifikatszustand wird verschlüsselt transportiert und
-vor dem Gateway-Start restauriert. Der TLS-Router wird erst nach stabiler
-öffentlicher HTTP-Erreichbarkeit dynamisch aktiviert. Neue Zertifikatsbeantragung
-ist für diesen Wiederherstellungslauf nicht erforderlich. HTTPS bleibt CA-geprüft.
-Die öffentliche GitHub-Client-ID wird auf die neu erzeugte CI-Identität aktualisiert.
+Die Scripts verwenden die festen Projektgruppen. Andere Projekte, Ressourcen
+oder Subscriptions werden nicht gelöscht. Geänderte Quoten, Kapazitäten oder
+abgelaufene Anmeldungen können einen späteren Neuaufbau anhalten. Der Ablauf
+lockert dafür keine Firewall auf 0.0.0.0/0 und umgeht keine TLS-Prüfung.
 
-`restore-guards` setzt die ursprünglichen Schutzsperren wieder ein. Der abschließende
-Plan soll `No changes` melden. Anschließend API-/Identitätsprüfungen und echte
-KI-Anfrage ausführen sowie die eigene restaurierte Notiz im Browser prüfen.
-Erst die protokollierte tatsächliche Ausführung beweist den Neuaufbau; Skripte
-allein sind noch kein Wiederherstellungsnachweis.
+## Was down tatsächlich macht
 
-`check_recovery_final.py` bündelt diese nachgelagerten Prüfungen und erzeugt den
-Abschlussnachweis erst bei vollständig bestandenem Wiederaufbau. Ein unterbrochener
-Bootstrap merkt sich den erfolgreichen Datenrestore und prüft bei Wiederholung
-dessen Hash, statt vorhandene Daten zu löschen. Bei einem fehlgeschlagenen
-Infrastruktur-Apply den partiellen State behalten und einen neuen normalen Plan
-für die fehlenden Ressourcen erzeugen; `infrastructure` nicht auf gefülltem State
-wiederholen. Im tatsächlichen Lauf war B1ms in der früheren festen Zone 3 nicht
-mehr verfügbar. Ohne feste Zonenbindung wählte Azure Zone 2.
+1. Automatische Cloud-Auslieferung über die GitHub-Variable
+   LEARNINGSTEPS_CLOUD_ENABLED=false sperren und aktive Läufe ausschließen.
+2. Docker und nötigenfalls kurz AKS/PostgreSQL starten, damit eine AKTUELLE
+   Sicherung entsteht. Die öffentliche Entwickler-IP wird gezielt als /32 aktualisiert.
+3. HPA entfernen und API auf null skalieren: keine weiteren Notizänderungen über
+   die API während der Sicherung. Bestehende Notizen werden nicht gelöscht.
+4. Alle Spalten/Zeilen der einzigen öffentlichen Tabelle entries exportieren,
+   lokal mit AES-256-GCM verschlüsseln und tatsächlich in eine isolierte neue
+   Testdatenbank restaurieren. Vollständigen Datenhash vergleichen und nur die
+   Testdatenbank entfernen. Danach den unveränderten Originalinhalt erneut prüfen.
+5. Genau ausgelieferte API-/Gateway-Images lokal archivieren und Digests prüfen.
+   Privaten Zertifikatszustand nur im Speicher lesen und sofort verschlüsseln.
+6. Terraform-State zusätzlich lokal verschlüsselt sichern. Gateway-Service,
+   Deployment und Zertifikatsvolume geordnet entfernen, damit Azure Netzwerk
+   und Disk freigibt.
+7. Die drei bekannten prevent_destroy-Sperren vorübergehend öffnen. Einen neuen
+   vollständigen Destroy-Plan erstellen, auf die exakten Projektgruppen begrenzen,
+   seine Prüfsumme kontrollieren und anwenden. Danach leeren State nachweisen.
+8. Leeren State ebenfalls lokal verschlüsselt sichern, Schutzsperren wieder setzen
+   und verbleibende eigene Gruppen einschließlich rg-learningsteps-tfstate löschen.
+9. Subscription auf aktive LearningSteps-Ressourcen und alle fünf Projektgruppen
+   prüfen. Erst null Ressourcen und fünf fehlende Gruppen gelten als abgeschaltet.
 
-## Kosten und normale Pausen
+Gestoppte Dienste können für die Sicherung also kurz laufen. Der Zielzustand ist
+anschließend vollständiger Abbau, nicht nur Stopped mit weiter bestehendem Speicher.
+Vergangener Verbrauch kann verzögert in der Azure-Abrechnung erscheinen.
+Standard-Key-Vault- und Foundry-Löschschutz wird nicht umgangen; softgelöschte
+Objekte können bis zum Ende der Schutzfrist sichtbar bleiben.
 
-Für eine normale Pause nicht die gesamte Infrastruktur löschen. AKS und PostgreSQL
-können gestoppt werden; PostgreSQL startet nach sieben Tagen automatisch wieder.
-Storage, ACR, DNS, öffentliche IP und gegebenenfalls LoadBalancer/Disks verursachen
-weiterhin Restkosten. Den Modellzugriff bei Bedarf über einen neuen geprüften Plan
-mit `enable_ai_summary=false` entfernen; ein gewöhnlicher späterer Plan aktiviert
-wegen des Defaultwerts das Modell wieder. Nach einer Änderung der öffentlichen IP
-zuerst `refresh_developer_access.py` verwenden, keine Zugangsbereiche auf /0 öffnen.
+## Was up tatsächlich macht
 
-## Unterbrochener Apply und Geheimnisimport
+1. Lokale Daten-, Image- und Zertifikatssicherungen entschlüsseln/prüfen.
+2. State-Ressourcengruppe, Storagekonto und privaten Blobcontainer neu erstellen:
+   Entra-Anmeldung, HTTPS, keine Shared Keys, kein öffentlicher Blobzugriff,
+   Versionierung und sieben Tage Blob-/Container-Löschschutz.
+3. Terraform neu mit dem Backend verbinden. Bei einem neuen leeren Backend nur
+   den verifiziert LEEREN State zurückspielen. Den alten Ressourcen-State vor dem
+   Abbau nie als vermeintlich noch vorhandene Infrastruktur hochladen.
+4. Aktuelle Entwickler-IP aufnehmen und den nicht destruktiven Wiederaufbauplan
+   anwenden. Softgelöschtes Foundry-Konto kontrolliert übernehmen; nach Ablauf
+   seiner Aufbewahrung kann Terraform es neu erstellen. Teilstände bleiben erhalten.
+5. Gesicherte Images nach ACR übertragen, kubeconfig und Dienstidentitäten
+   aktualisieren, Schema und eingeschränkte SQL-Rolle einrichten und Notizen nur
+   in eine leere Tabelle restaurieren. Daten werden nicht durch DELETE/TRUNCATE ersetzt.
+6. API, HPA, Service, CSI und Gateway aufbauen. Verschlüsselten Zertifikatszustand
+   vor dem Gateway-Start restaurieren und öffentliches HTTPS verifiziert prüfen.
+7. Öffentliche GitHub-Client-ID auf die neue Lieferidentität aktualisieren.
+   Datenhash, neuen Cluster, API, Admin-Geheimnis-Verweigerung und echte KI prüfen.
+   Terraform muss ohne Änderungen enden. Erst danach Cloud-Auslieferung freigeben.
 
-Im tatsächlichen Lauf mussten zwei bereits angelegte Ressourcen nach einer
-Unterbrechung importiert werden. Vor Aufheben der alten State-Sperre wurde
-verifiziert, dass kein Terraform-Prozess mehr lief. Ein Secret-Import kann den
-Wert in den privaten State lesen, auch wenn die Zielkonfiguration Write-only
-verwendet. Die App-Kennwortversion wurde deshalb VOR dem SQL-Rollenaufbau auf 2
-erhöht; der importierte alte Wert wird nicht als SQL-Kennwort verwendet. Der
-Folge-Apply entfernt das reguläre value-Feld aus dem aktuellen State. Historische
-State-Versionen bleiben vertrauliche Betriebsdaten und gehören nicht in die Abgabe.
-Dies ist kein allgemeines automatisches Rotationsverfahren für bereits laufende
-Datenbanken. Weitere Rotationen müssen SQL-Rolle und URL koordiniert aktualisieren.
+Ein neuer Zyklus entfernt alte Erfolgsmarkierungen genau einmal. Ein wiederholter
+Bootstrap im selben Zyklus vergleicht bereits restaurierte Daten nur noch mit
+ihrem Hash. Er löscht keine vorhandenen Notizen, um einen Restore erneut zu erzwingen.
+Die Fortschritte liegen in .state/lifecycle.json. Ein zweiter gleichzeitig
+laufender Ablauf wird gesperrt. Eine verwaiste Terraform-Sperre nach einem
+Prozessabbruch muss nach Prüfung laufender Prozesse gezielt behandelt werden;
+sie wird nicht pauschal automatisch aufgehoben.
+
+## Diese privaten Dateien unbedingt behalten
+
+- .state/lifecycle.json und .state/evolution-release.json: aktueller Zyklus,
+  Phasen und genaue Pfade zu den Sicherungen.
+- artifacts/backups: verschlüsselte Journaldatei und zugehöriges Manifest.
+- .secrets/backups: passender Entschlüsselungsschlüssel und verschlüsselte States.
+- artifacts/recovery: genaue Imagearchive und verschlüsselter Zertifikatszustand;
+  neuere Zyklen haben eigene Unterordner und überschreiben ältere Archive nicht.
+- app/infra-terraform/aks.local.auto.tfvars.json: lokale öffentliche IDs/IP-Eingaben.
+
+Das öffentliche Abgabe-ZIP und Git enthalten diese privaten Daten NICHT. Für die
+Wiederherstellung vorhandener Notizen reicht ein Git-Clone allein nicht aus.
+Die privaten Dateien zusätzlich geschützt außerhalb dieses PCs aufbewahren.
+Schlüssel nicht mit dem Abgabepaket oder mit Screenshots weitergeben.
+
+## Nachweise und Grenzen
+
+- Vollständiger realer Anwendungs-Neuaufbau mit unveränderter Notiz am 19.11.:
+  artifacts/history/20261119/evolution-recovery-final.json.
+- Aktueller vollständiger Abbau und Azure-Inventar:
+  artifacts/azure/lifecycle-down-check.json.
+- Prüfung der neuen Backend-Erstellung:
+  artifacts/azure/backend-recreation-check.json.
+- Neue lokale Sicherheits-/Wiederaufnahmeprüfungen: tests/test_lifecycle.py;
+  sie werden zusätzlich in GitHub CI ausgeführt.
+
+Nur vorhandene protokollierte Ergebnisse sind tatsächliche Ausführungsnachweise.
+Die spätere up-Aktion wird beim Abschluss dieses Kostenabbaus bewusst nicht für
+einen erneuten kompletten AKS-Aufbau ausgeführt. Dieser würde die gerade
+entfernten laufenden Kosten wieder einschalten. Die Komponentenwiederherstellung
+ist aus dem vorherigen echten Neuaufbau belegt; die neue Backend-Erstellung
+wird gesondert tatsächlich getestet und anschließend ebenfalls wieder entfernt.
+Die Secret-Konfiguration enthält ein Ablaufdatum; vor einem späteren Betrieb
+nach diesem Datum müssen Ablauf und Rotation mit der SQL-Rolle abgestimmt werden.

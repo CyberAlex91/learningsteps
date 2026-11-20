@@ -91,3 +91,16 @@ Ausgewählte tokenfreie Protokolle liegen außerhalb des Repositorys unter
 `../artifacts/github/`. Private Zugangsdaten gehören weder in diese Dateien noch
 in Screenshots. Actions und Scanner sind auf geprüfte unveränderliche Digests
 beziehungsweise Commit-IDs festgelegt.
+
+## Vollständige Kostenpause ab 20.11.2026
+
+`lifecycle.py down` setzt LEARNINGSTEPS_CLOUD_ENABLED=false. Der aktuelle Workflow
+führt weiterhin Tests und Scans aus, überspringt aber Image-Lieferartefakt und
+kompletten Azure-Lieferjob. `up` aktualisiert die neue öffentliche Client-ID und
+setzt die Variable erst nach erfolgreicher Wiederherstellung wieder auf true.
+Die ursprüngliche erfolgreiche main-Auslieferung vom 19.11. bleibt ein historischer
+Nachweis; der neue Prüf-Lauf während der abgeschalteten Cloud steht separat in
+`artifacts/github/offline-lifecycle-ci-final.json`. Ein dort übersprungener
+Lieferjob ist der gewünschte Zustand, kein Deployment-Nachweis.
+Die zusätzlichen Lifecycle-Sicherheitstests laufen in CI mit gesondertem
+PyYAML-Werkzeugpaket; das Produktionsimage erhält dadurch keine neue Abhängigkeit.

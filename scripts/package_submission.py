@@ -26,6 +26,9 @@ EVIDENCE = [
     "github/history-scan-and-delivery-44534120752.json", "github/foundry-delivery-44536752654.json",
     "security/terraform-trivy.txt", "security/traefik-gateway-trivy.txt",
     "security/git-history-summary.json",
+    "azure/lifecycle-down-check.json", "azure/backend-recreation-check.json",
+    "github/offline-lifecycle-ci-final.json",
+    "history/20261119/terraform-destroy-check.json", "history/20261119/evolution-recovery-final.json",
 ]
 
 
@@ -37,6 +40,9 @@ def main():
     final = json.loads((ROOT / "artifacts/azure/evolution-recovery-final.json").read_text(encoding="utf-8"))
     if final.get("passed") is not True:
         raise SystemExit("Actual recovery acceptance is required")
+    off = json.loads((ROOT / "artifacts/azure/lifecycle-down-check.json").read_text(encoding="utf-8"))
+    if not off.get("passed") or off.get("active_project_resource_count") != 0:
+        raise SystemExit("Verified complete cloud shutdown is required for the final offline package")
     if git("status", "--porcelain").strip():
         raise SystemExit("Commit reviewed source/documentation changes before packaging")
     revision = git("rev-parse", "HEAD").decode().strip()
@@ -56,7 +62,7 @@ def main():
     introduction = '''<!-- Zweck: Leitet durch die abschließende LearningSteps-Evolution-Abgabe. -->
 # LearningSteps Evolution Abgabe
 
-Alexander Plank | 19.11.2026
+Alexander Plank | 20.11.2026
 
 - Bericht/LearningSteps-Evolution-Projektbericht.pdf: technischer Bericht mit Ergebnis und Grenzen.
 - Anleitung/LearningSteps-Evolution-Ablauf.pdf: separate Erklärung zum Verstehen und Nachmachen.
@@ -67,12 +73,16 @@ Alexander Plank | 19.11.2026
 Für den tatsächlichen Betrieb werden eigene lokale Anmeldung und private Konfiguration
 benötigt. Die Wiederherstellung vorhandener Daten benötigt die separat aufbewahrten
 verschlüsselten Backups und ihre Schlüssel. Beides ist absichtlich nicht in dieser
-Abgabe enthalten. Remote-State-Storage bleibt beim Anwendungsabbau erhalten.
+Abgabe enthalten. Der Remote-State-Speicher wird bei Bedarf ebenfalls neu erstellt.
+Die Cloud ist vollständig abgebaut, einschließlich Remote-State-Speicher.
+Wiederherstellung: python3 app/scripts/lifecycle.py up (WSL, ursprünglicher
+Projektordner mit privaten Sicherungen). Einzelheiten in app/RECOVERY.md.
 Prometheus/Grafana ist ausdrücklich optional und wurde nicht implementiert.
 '''
     data["START-HIER.md"] = introduction.encode()
     data["VERSION.json"] = json.dumps({"git_commit": revision, "repository": "https://github.com/CyberAlex91/learningsteps",
-                                        "recovery_passed": True, "private_material_included": False}, indent=2).encode()
+                                        "recovery_passed": True, "cloud_state": "fully_removed_including_backend",
+                                        "private_material_included": False}, indent=2).encode()
     patterns = [re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"),
                 re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
                 re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}")]

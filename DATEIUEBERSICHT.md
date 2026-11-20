@@ -126,3 +126,11 @@ Diese Übersicht ist selbst die Erklärung der Dateizwecke. Nicht im Quellenkata
 | scripts/package_submission.py | Packt versionierte Quellen und ausgewählte sichere Nachweise mit Prüfsummen. |
 | docs/LearningSteps-Evolution-Projektbericht.md | Editierbare Quelle des finalen technischen Berichts. |
 | docs/LearningSteps-Evolution-Ablauf.md | Editierbare Quelle der separaten verständlichen Anleitung. |
+
+## Vollständiger Kostenabbau ab 20.11.2026
+
+| Datei | Aufgabe |
+| --- | --- |
+| scripts/lifecycle.py | Ein-Befehl-Abbau und Wiederherstellung einschließlich Remote-State-Backend, frischer Datensicherung und Cloud-Liefersperre. |
+| scripts/LearningSteps.ps1 | Komfortstart aus PowerShell; Azure-Arbeit bleibt in WSL, Standardaktion ist nur Status. |
+| tests/test_lifecycle.py | Prüft Sicherungsintegrität, falsche Schlüssel, genaue Projektgrenzen und Wiederaufnahme ohne Cloudzugriff. |
